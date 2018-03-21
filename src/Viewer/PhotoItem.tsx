@@ -1,6 +1,7 @@
 import * as React from "react";
 import { IMenuItemContent } from "../Interfaces";
 import Editor from "./Editor";
+import Renderer from "./Renderer";
 import {
   EDITBAR_SIZE,
   HERO_SIZE,
@@ -36,7 +37,6 @@ class PhotoItem extends React.Component<IProps, IState> {
     let height = window.innerHeight - HERO_SIZE;
 
     if (this.props.canEdit) {
-      console.log("canEdit");
       height = height - EDITBAR_SIZE;
     }
 
@@ -169,24 +169,41 @@ class PhotoItem extends React.Component<IProps, IState> {
           img: {
             width: Math.max(
               0,
-              verticalSplitWidth - NUMS_FIX
+              horizontalSplitWidth - NUMS_FIX
             ),
             height: Math.max(
               0,
-              verticalSplitHeight - NUMS_FIX
+              horizontalSplitHeight - NUMS_FIX
             )
           }
         };
     // }
     return (
       <>
-        <Editor
-          polygons={this.props.item.polygons}
-          width={styles.img.width}
-          height={styles.img.height}
-          outerHeight={styles.splitter.height}
-          outerWidth={styles.splitter.width}
-        />
+        {this.props.canEdit ? (
+          <Editor
+            polygons={this.props.item.polygons}
+            width={styles.img.width}
+            height={styles.img.height}
+            outerHeight={styles.splitter.height}
+            outerWidth={styles.splitter.width}
+            vbh={this.props.item.height}
+            vbw={this.props.item.width}
+            src={url}
+          />
+        ) : (
+          <Renderer
+            vbh={this.props.item.height}
+            vbw={this.props.item.width}
+            polygons={this.props.item.polygons}
+            width={styles.img.width}
+            height={styles.img.height}
+            outerHeight={styles.splitter.height}
+            outerWidth={styles.splitter.width}
+            editing={false}
+            src={url}
+          />
+        )}
         <div style={styles.wrapper as any}>
           <div
             style={{
@@ -195,7 +212,7 @@ class PhotoItem extends React.Component<IProps, IState> {
               alignItems: "center"
             }}
           >
-            <img style={styles.img} src={url} />
+            {/* <img style={styles.img} src={url} /> */}
           </div>
           <div
             style={{

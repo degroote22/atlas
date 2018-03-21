@@ -12,6 +12,9 @@ class Editor extends React.Component<
     height: number;
     outerHeight: number;
     outerWidth: number;
+    vbw: number;
+    vbh: number;
+    src: string;
   },
   {
     creating: boolean;
@@ -134,27 +137,18 @@ class Editor extends React.Component<
         <div style={{ height: EDITBAR_SIZE }}>
           {this.renderEditorBar()}
         </div>
-        <div
-          style={{
-            display: "flex",
-            width: this.props.outerWidth,
-            height: this.props.outerHeight,
-            justifyContent: "center",
-            alignItems: "center"
-          }}
-        >
-          <Renderer
-            height={this.props.height}
-            width={this.props.width}
-            outerWidth={this.props.outerWidth}
-            outerHeight={this.props.outerHeight}
-            onClickCreating={this.onClickCreating}
-            editing={
-              this.state.creating || this.state.saving
-            }
-            polygons={this.getPolygons()}
-          />
-        </div>
+        <Renderer
+          vbw={this.props.vbw}
+          vbh={this.props.vbh}
+          height={this.props.height}
+          width={this.props.width}
+          outerWidth={this.props.outerWidth}
+          outerHeight={this.props.outerHeight}
+          onClickCreating={this.onClickCreating}
+          editing={this.state.creating || this.state.saving}
+          polygons={this.getPolygons()}
+          src={this.props.src}
+        />
       </div>
     );
   }

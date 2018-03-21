@@ -13,6 +13,9 @@ class Renderer extends React.Component<
     height: number;
     onClickCreating?: (x: number, y: number) => void;
     onChangeFocus?: (id: string) => void;
+    vbw: number;
+    vbh: number;
+    src: string;
   },
   { showing: string; clicked: string }
 > {
@@ -67,13 +70,13 @@ class Renderer extends React.Component<
         EDITBAR_SIZE -
         (this.props.outerHeight - this.props.height) / 2;
 
-      console.log(x, y);
-
-      console.log("xpercent");
       const xpercent = x / this.props.width;
       const ypercent = y / this.props.height;
 
-      this.props.onClickCreating(xpercent, ypercent);
+      this.props.onClickCreating(
+        xpercent * this.props.vbw,
+        ypercent * this.props.vbh
+      );
     }
   };
 
@@ -89,24 +92,44 @@ class Renderer extends React.Component<
 
   render() {
     return (
-      <svg
-        onClick={this.onClickAnywhere}
-        height={this.props.height}
-        width={this.props.width}
-        viewBox="0 0 100 100"
+      <div
+        style={{
+          display: "flex",
+          width: this.props.outerWidth,
+          height: this.props.outerHeight,
+          justifyContent: "center",
+          alignItems: "center",
+          position: "absolute"
+        }}
       >
-        {this.props.polygons.map(polygon => (
-          <Polygon
-            key={polygon.id}
-            {...polygon}
-            editing={this.props.editing}
-            hidden={this.getHidden(polygon.id)}
-            onMouseEnter={this.onMouseEnter}
-            onClick={this.onClick}
-            onMouseLeave={this.onMouseLeave}
+        <svg
+          onClick={this.onClickAnywhere}
+          height={this.props.height}
+          width={this.props.width}
+          viewBox={`0 0 ${this.props.vbw} ${
+            this.props.vbh
+          }`}
+        >
+          <image
+            x={0}
+            y={0}
+            width={this.props.vbw}
+            height={this.props.vbh}
+            xlinkHref={this.props.src}
           />
-        ))}
-      </svg>
+          {this.props.polygons.map(polygon => (
+            <Polygon
+              key={polygon.id}
+              {...polygon}
+              editing={this.props.editing}
+              hidden={this.getHidden(polygon.id)}
+              onMouseEnter={this.onMouseEnter}
+              onClick={this.onClick}
+              onMouseLeave={this.onMouseLeave}
+            />
+          ))}
+        </svg>
+      </div>
     );
   }
 }
