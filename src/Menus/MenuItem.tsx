@@ -1,36 +1,25 @@
 import * as React from "react";
-import * as Sizes from "../Sizes";
 import { IMenuItem } from "../Interfaces";
 
 interface IProps {
   item: IMenuItem;
   onClick: (item: IMenuItem) => void;
+  dark: boolean;
 }
 
 class MenuItem extends React.Component<IProps> {
   private onClick = () =>
     this.props.onClick(this.props.item);
   render() {
+    const cn = this.props.dark
+      ? "button is-white"
+      : "button is-dark";
     return (
-      <div
-        style={{
-          height:
-            Sizes.BarHeight / 2 - Sizes.BorderWidth * 2
-        }}
-      >
-        <button
-          style={{
-            flex: 1,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "rgba(0, 0, 0, 0.1)"
-          }}
-          onClick={this.onClick}
-        >
+      <p className="field">
+        <a className={cn} onClick={this.onClick}>
           {this.props.item.title}
-        </button>
-      </div>
+        </a>
+      </p>
     );
   }
 }

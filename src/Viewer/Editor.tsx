@@ -1,11 +1,18 @@
 import * as React from "react";
 import Renderer from "./Renderer";
-import { IPolygon, IPathPoint } from "./Interfaces";
+import { IPolygon, IPathPoint } from "../Interfaces";
+import { EDITBAR_SIZE } from "./Constants";
 
 const editingFill = { r: 255, g: 0, b: 0 };
 
 class Editor extends React.Component<
-  { polygons: IPolygon[] },
+  {
+    polygons: IPolygon[];
+    width: number;
+    height: number;
+    outerHeight: number;
+    outerWidth: number;
+  },
   {
     creating: boolean;
     saving: boolean;
@@ -123,15 +130,31 @@ class Editor extends React.Component<
   render() {
     // "200,10 250,190 160,210"
     return (
-      <div>
-        <Renderer
-          height={210}
-          width={500}
-          onClickCreating={this.onClickCreating}
-          editing={this.state.creating || this.state.saving}
-          polygons={this.getPolygons()}
-        />
-        {this.renderEditorBar()}
+      <div style={{ position: "absolute" }}>
+        <div style={{ height: EDITBAR_SIZE }}>
+          {this.renderEditorBar()}
+        </div>
+        <div
+          style={{
+            display: "flex",
+            width: this.props.outerWidth,
+            height: this.props.outerHeight,
+            justifyContent: "center",
+            alignItems: "center"
+          }}
+        >
+          <Renderer
+            height={this.props.height}
+            width={this.props.width}
+            outerWidth={this.props.outerWidth}
+            outerHeight={this.props.outerHeight}
+            onClickCreating={this.onClickCreating}
+            editing={
+              this.state.creating || this.state.saving
+            }
+            polygons={this.getPolygons()}
+          />
+        </div>
       </div>
     );
   }

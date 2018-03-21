@@ -1,50 +1,57 @@
 import * as React from "react";
-import * as Colors from "../Colors";
-import * as Sizes from "../Sizes";
+import CreateItem from "./CreateItem";
+import { IItemToCreate } from "../Interfaces";
 
 interface IProps {
   title: string;
-  editable: boolean;
-  canEdit: boolean;
+  editable: boolean; // se esse item é editável
+  canEdit: boolean; // se o usuário tem permissão
+  loading: boolean;
+  onCreateItem: (
+    groupid: string,
+    item: IItemToCreate
+  ) => void;
+  dark: boolean;
+  id: string;
 }
 
 class MenuGroup extends React.Component<IProps> {
   private renderCreateItem = () => {
-    return "createItem";
+    return (
+      <CreateItem
+        groupid={this.props.id}
+        grouptitle={this.props.title}
+        loading={this.props.loading}
+        onCreateItem={this.props.onCreateItem}
+      />
+    );
   };
 
   render() {
+    const cn = this.props.dark
+      ? "hero is-dark"
+      : "hero is-light";
     return (
-      <div
-        style={{
-          backgroundColor: Colors.Background,
-          borderWidth: Sizes.BorderWidth,
-          borderStyle: "solid",
-          borderColor: Colors.Borders,
-          borderTopWidth: 0
-        }}
-      >
-        <div
-          style={{
-            height: Sizes.BarHeight - Sizes.BorderWidth * 2,
-            flexDirection: "row",
-            display: "flex"
-          }}
-        >
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center"
-            }}
-          >
-            {this.props.title}
+      <>
+        <div className={cn}>
+          <div className="hero-body">
+            <div className="container">
+              <h2 className="title">{this.props.title}</h2>
+              {this.props.children}
+            </div>
           </div>
         </div>
-        {this.props.children}
-        {this.props.canEdit && this.renderCreateItem()}
-      </div>
+        {this.props.canEdit &&
+          this.props.editable && (
+            <div className="hero is-info">
+              <div className="hero-body">
+                <div className="container">
+                  {this.renderCreateItem()}
+                </div>
+              </div>
+            </div>
+          )}
+      </>
     );
   }
 }

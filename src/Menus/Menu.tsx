@@ -2,7 +2,12 @@ import * as React from "react";
 import MenuBar from "./MenuBar";
 import MenuGroup from "./MenuGroup";
 import MenuItem from "./MenuItem";
-import { IMenuGroup, IMenuItem } from "../Interfaces";
+import {
+  IMenuGroup,
+  IMenuItem,
+  IItemToCreate
+} from "../Interfaces";
+import CreateGroup from "./CreateGroup";
 
 interface IProps {
   closeMenu: () => void;
@@ -10,24 +15,34 @@ interface IProps {
   groups: IMenuGroup[];
   onMenuClick: (item: IMenuItem) => void;
   canEdit: boolean;
+  loading: boolean;
+  onCreateGroup: (title: string) => void;
+  onCreateItem: (
+    groupid: string,
+    item: IItemToCreate
+  ) => void;
 }
 
 const groupsDefault: IMenuGroup[] = [
   {
+    id: "@@@NAOUSADO",
     title: "Outros",
     editable: false,
     items: [
       {
-        title: "Fazer Login",
+        id: "@@@NAOUSADO1",
+        title: "Fazer Login / Logout",
         type: "default",
         payload: "login"
       },
       {
+        id: "@@@NAOUSADO2",
         title: "Sobre",
         type: "default",
         payload: "about"
       }
-    ]
+    ],
+    priority: 0 // não eh usado
   }
 ];
 
@@ -37,27 +52,43 @@ class Menu extends React.Component<IProps> {
   };
 
   private renderGroups = () => {
-    return [...this.props.groups, ...groupsDefault].map(
-      group => (
-        <MenuGroup
-          key={group.title}
-          title={group.title}
-          editable={group.editable}
-          canEdit={this.props.canEdit}
-        >
-          {group.items.map(item => (
-            <MenuItem
-              item={item}
-              key={item.title}
-              onClick={this.onMenuClick}
-            />
-          ))}
-        </MenuGroup>
-      )
-    );
+    const sortedGroups = [...this.props.groups];
+    // TODO: SORT THEM
+
+    const all = [...sortedGroups, ...groupsDefault];
+
+    return all.map((group, index) => (
+      <MenuGroup
+        key={group.title}
+        id={group.id}
+        title={group.title}
+        editable={group.editable}
+        canEdit={this.props.canEdit}
+        loading={this.props.loading}
+        onCreateItem={this.props.onCreateItem}
+        dark={index % 2 !== 0}
+      >
+        {group.items.map(item => (
+          <MenuItem
+            item={item}
+            key={item.id}
+            onClick={this.onMenuClick}
+            dark={index % 2 !== 0}
+          />
+        ))}
+      </MenuGroup>
+    ));
   };
 
-  private renderCreateGroup = () => "createGroup";
+  private onCreateGroup = (title: string) => {
+    this.props.onCreateGroup(title);
+  };
+  private renderCreateGroup = () => (
+    <CreateGroup
+      loading={this.props.loading}
+      onCreateGroup={this.onCreateGroup}
+    />
+  );
 
   render() {
     if (this.props.hidden) {
@@ -70,7 +101,9 @@ class Menu extends React.Component<IProps> {
           position: "absolute",
           left: 0,
           top: 0,
-          width: "100%"
+          width: "100%",
+          backgroundColor: "whitesmoke",
+          zIndex: 555
         }}
       >
         <MenuBar
@@ -78,8 +111,8 @@ class Menu extends React.Component<IProps> {
           title={"Menu"}
           type="close"
         />
-        {this.renderGroups()}
         {this.props.canEdit && this.renderCreateGroup()}
+        {this.renderGroups()}
       </div>
     );
   }

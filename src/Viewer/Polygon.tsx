@@ -1,5 +1,8 @@
 import * as React from "react";
-import { IPathPoint, IPolygonToRender } from "./Interfaces";
+import {
+  IPathPoint,
+  IPolygonToRender
+} from "../Interfaces";
 
 interface IProps extends IPolygonToRender {
   onMouseEnter: (id: string) => void;

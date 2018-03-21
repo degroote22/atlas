@@ -1,11 +1,14 @@
 import * as React from "react";
 import Polygon from "./Polygon";
-import { IPolygon } from "./Interfaces";
+import { IPolygon } from "../Interfaces";
+import { HERO_SIZE, EDITBAR_SIZE } from "./Constants";
 
 class Renderer extends React.Component<
   {
     polygons: IPolygon[];
     width: number;
+    outerWidth: number;
+    outerHeight: number;
     editing: boolean;
     height: number;
     onClickCreating?: (x: number, y: number) => void;
@@ -54,7 +57,23 @@ class Renderer extends React.Component<
     ev: React.MouseEvent<SVGSVGElement>
   ) => {
     if (this.props.onClickCreating) {
-      this.props.onClickCreating(ev.pageX, ev.pageY);
+      const x =
+        ev.pageX -
+        (this.props.outerWidth - this.props.width) / 2;
+
+      const y =
+        ev.pageY -
+        HERO_SIZE -
+        EDITBAR_SIZE -
+        (this.props.outerHeight - this.props.height) / 2;
+
+      console.log(x, y);
+
+      console.log("xpercent");
+      const xpercent = x / this.props.width;
+      const ypercent = y / this.props.height;
+
+      this.props.onClickCreating(xpercent, ypercent);
     }
   };
 
@@ -71,10 +90,10 @@ class Renderer extends React.Component<
   render() {
     return (
       <svg
-        style={{ backgroundColor: "white" }}
         onClick={this.onClickAnywhere}
         height={this.props.height}
         width={this.props.width}
+        viewBox="0 0 100 100"
       >
         {this.props.polygons.map(polygon => (
           <Polygon

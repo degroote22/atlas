@@ -1,36 +1,36 @@
 import * as React from "react";
-import { IMenuItem, IPhotoItem } from "./Interfaces";
-import Editor from "./Editor";
+import { IMenuItem, IMenuItemContent } from "./Interfaces";
+import PhotoItem from "./Viewer/PhotoItem";
+import Login from "./Pages/Login";
+import About from "./Pages/About";
 
 interface IProps {
   canEdit: boolean;
   openItem: IMenuItem;
+  onLogin: (email: string, password: string) => void;
+  loading: boolean;
+  onSignout: () => void;
 }
 
 class Router extends React.Component<IProps> {
   private renderAbout = () => {
-    return "about";
+    return <About />;
   };
 
   private renderLogin = () => {
-    return "renderLogin";
+    return (
+      <Login
+        isLogged={this.props.canEdit}
+        loading={this.props.loading}
+        onLogin={this.props.onLogin}
+        onSignout={this.props.onSignout}
+      />
+    );
   };
 
-  private renderPhotoItem = (item: IPhotoItem[]) => {
+  private renderPhotoItem = (item: IMenuItemContent) => {
     return (
-      <Editor
-        polygons={[
-          {
-            path: [
-              { x: 200, y: 10 },
-              { x: 250, y: 190 },
-              { x: 160, y: 210 }
-            ],
-            fill: { r: 0, g: 255, b: 0 },
-            id: "qualquer"
-          }
-        ]}
-      />
+      <PhotoItem item={item} canEdit={this.props.canEdit} />
     );
   };
 
@@ -44,9 +44,7 @@ class Router extends React.Component<IProps> {
       }
     }
     if (this.props.openItem.type === "content") {
-      return this.renderPhotoItem(
-        this.props.openItem.payload
-      );
+      return this.renderPhotoItem(this.props.openItem);
     }
     throw Error("Tipo de item não reconhecido");
   }

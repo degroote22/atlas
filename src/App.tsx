@@ -2,23 +2,38 @@ import * as React from "react";
 import MenuBar from "./Menus/MenuBar";
 import Menu from "./Menus/Menu";
 import * as Strings from "./Strings";
-import { IMenuItem } from "./Interfaces";
+import { IMenuItem, IItemToCreate } from "./Interfaces";
 import Router from "./Router";
-
+import Store from "./Store";
 interface IState {
-  width: number;
-  height: number;
+  // width: number;
+  // height: number;
   menuHidden: boolean;
-  canEdit: boolean;
   openItem: IMenuItem;
 }
 
 class App extends React.Component<{}, IState> {
+  private update = () => {
+    this.setState((s: any) => {
+      if (s.openItem.type === "content") {
+        return {
+          openItem: this.store.getItem(
+            s.openItem.id,
+            s.openItem.groupid
+          )
+        };
+      }
+      return s;
+    });
+    this.forceUpdate();
+  };
+
+  store = new Store(this.update);
+
   state = {
-    width: 0,
-    height: 0,
+    // width: 0,
+    // height: 0,
     menuHidden: false,
-    canEdit: false,
     openItem: {
       title: "Sobre",
       type: "default",
@@ -26,17 +41,47 @@ class App extends React.Component<{}, IState> {
     } as IMenuItem
   };
 
-  private openMenu = () =>
+  private openMenu = () => {
     this.setState({ menuHidden: false });
-  private closeMenu = () =>
+  };
+
+  private closeMenu = () => {
     this.setState({ menuHidden: true });
+  };
 
   private getMenuGroups = () => {
-    return [];
+    return this.store.getMenuGroups();
   };
 
   private onMenuClick = (item: IMenuItem) => {
     this.setState({ menuHidden: true, openItem: item });
+  };
+
+  private onLogin = (email: string, password: string) => {
+    this.store.onLogin(email, password);
+  };
+
+  private onSignout = () => {
+    this.store.onSignout();
+  };
+
+  private getLoading = () => {
+    return this.store.getLoading();
+  };
+
+  private onCreateGroup = (title: string) => {
+    this.store.onCreateGroup(title);
+  };
+
+  private onCreateItem = (
+    groupid: string,
+    payload: IItemToCreate
+  ) => {
+    this.store.onCreateItem(groupid, payload);
+  };
+
+  private getCanEdit = () => {
+    return this.store.getCanEdit();
   };
 
   render() {
@@ -47,7 +92,10 @@ class App extends React.Component<{}, IState> {
           closeMenu={this.closeMenu}
           groups={this.getMenuGroups()}
           onMenuClick={this.onMenuClick}
-          canEdit={this.state.canEdit}
+          canEdit={this.getCanEdit()}
+          loading={this.getLoading()}
+          onCreateGroup={this.onCreateGroup}
+          onCreateItem={this.onCreateItem}
         />
         <MenuBar
           onClick={this.openMenu}
@@ -55,8 +103,11 @@ class App extends React.Component<{}, IState> {
           type="open"
         />
         <Router
-          canEdit={this.state.canEdit}
+          onSignout={this.onSignout}
+          canEdit={this.getCanEdit()}
           openItem={this.state.openItem}
+          onLogin={this.onLogin}
+          loading={this.getLoading()}
         />
       </>
     );

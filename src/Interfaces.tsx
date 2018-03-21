@@ -20,27 +20,47 @@ export interface IPolygonToRender extends IPolygon {
   hidden: boolean;
 }
 
-export interface IMenuGroup {
+export interface IMenuGroupDb {
   title: string;
-  editable: boolean;
+  priority: number;
   items: IMenuItem[];
 }
 
-export interface IPhotoItem extends IPolygon {
+export interface IMenuGroup extends IMenuGroupDb {
+  editable: boolean;
+  id: string;
+  items: IMenuItem[];
+}
+
+export interface IItemToCreate {
+  width: number;
+  height: number;
   title: string;
-  description: string;
-  url: string;
+  file: File;
+}
+
+export interface IPhotoItem {
+  extension: string;
+  width: number;
+  height: number;
+  polygons: IPolygon[];
 }
 
 export type IMenuItem = IMenuItemContent | IMenuItemDefault;
 
-export interface IMenuItemContent {
-  type: "content";
+export interface IMenuItemDb extends IPhotoItem {
+  id: string;
   title: string;
-  payload: IPhotoItem[];
+}
+
+export interface IMenuItemContent extends IMenuItemDb {
+  type: "content";
+  url: string;
+  groupid: string;
 }
 
 export interface IMenuItemDefault {
+  id: string;
   type: "default";
   title: string;
   payload: "about" | "login";
