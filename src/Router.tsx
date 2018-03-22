@@ -1,5 +1,10 @@
 import * as React from "react";
-import { IMenuItem, IMenuItemContent } from "./Interfaces";
+import {
+  IMenuItem,
+  IMenuItemContent,
+  IPolygonToCreate,
+  IPolygon
+} from "./Interfaces";
 import PhotoItem from "./Viewer/PhotoItem";
 import Login from "./Pages/Login";
 import About from "./Pages/About";
@@ -10,6 +15,9 @@ interface IProps {
   onLogin: (email: string, password: string) => void;
   loading: boolean;
   onSignout: () => void;
+  onCreatePolygon: (polygon: IPolygonToCreate) => void;
+  onDeletePolygon: (id: string) => void;
+  onEditPolygon: (polygon: IPolygon) => void;
 }
 
 class Router extends React.Component<IProps> {
@@ -30,7 +38,13 @@ class Router extends React.Component<IProps> {
 
   private renderPhotoItem = (item: IMenuItemContent) => {
     return (
-      <PhotoItem item={item} canEdit={this.props.canEdit} />
+      <PhotoItem
+        item={item}
+        canEdit={this.props.canEdit}
+        onCreatePolygon={this.props.onCreatePolygon}
+        onDeletePolygon={this.props.onDeletePolygon}
+        onEditPolygon={this.props.onEditPolygon}
+      />
     );
   };
 

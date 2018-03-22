@@ -64,56 +64,60 @@ class LoginPage extends React.Component<IProps, IState> {
       );
     }
     return (
-      <div style={{ padding: 32 }}>
-        <form
-          onSubmit={e => {
-            e.preventDefault();
-          }}
-        >
-          <div className="field">
-            <label className="label">Email</label>
-            <div className="control">
-              <input
-                className={cn(["input", colorModifier])}
-                type="email"
-                placeholder="Digite seu e-mail"
-                autoComplete="email"
-                value={this.state.email}
-                disabled={this.props.loading}
-                onChange={this.onEmailChange}
-              />
-            </div>
-          </div>
-          <div className="field">
-            <label className="label">Senha</label>
-            <div className="control">
-              <input
-                className={cn(["input", colorModifier])}
-                type="password"
-                placeholder="Digite sua senha"
-                autoComplete="current-password"
-                value={this.state.password}
-                disabled={this.props.loading}
-                onChange={this.onPasswordChange}
-              />
-            </div>
-          </div>
-          <div className="field">
-            <button
-              className={cn([
-                "button",
-                "is-fullwidth",
-                colorModifier,
-                this.props.loading ? "is-loading" : ""
-              ])}
-              onClick={this.onLoginClick}
-              disabled={this.props.loading}
+      <section className="hero is-light">
+        <div className="hero-body">
+          <div className="container">
+            <form
+              onSubmit={e => {
+                e.preventDefault();
+              }}
             >
-              Entrar
-            </button>
+              <div className="field">
+                <label className="label">Email</label>
+                <div className="control">
+                  <input
+                    className={cn(["input", colorModifier])}
+                    type="email"
+                    placeholder="Digite seu e-mail"
+                    autoComplete="email"
+                    value={this.state.email}
+                    disabled={this.props.loading}
+                    onChange={this.onEmailChange}
+                  />
+                </div>
+              </div>
+              <div className="field">
+                <label className="label">Senha</label>
+                <div className="control">
+                  <input
+                    className={cn(["input", colorModifier])}
+                    type="password"
+                    placeholder="Digite sua senha"
+                    autoComplete="current-password"
+                    value={this.state.password}
+                    disabled={this.props.loading}
+                    onChange={this.onPasswordChange}
+                  />
+                </div>
+              </div>
+              <div className="field">
+                <button
+                  className={cn([
+                    "button",
+                    "is-fullwidth",
+                    colorModifier,
+                    this.props.loading ? "is-loading" : ""
+                  ])}
+                  onClick={this.onLoginClick}
+                  disabled={this.props.loading}
+                >
+                  Entrar
+                </button>
+              </div>
+            </form>
           </div>
-        </form>
-      </div>
+        </div>
+      </section>
     );
   }
 }

@@ -2,7 +2,12 @@ import * as React from "react";
 import MenuBar from "./Menus/MenuBar";
 import Menu from "./Menus/Menu";
 import * as Strings from "./Strings";
-import { IMenuItem, IItemToCreate } from "./Interfaces";
+import {
+  IMenuItem,
+  IItemToCreate,
+  IPolygonToCreate,
+  IPolygon
+} from "./Interfaces";
 import Router from "./Router";
 import Store from "./Store";
 interface IState {
@@ -84,6 +89,30 @@ class App extends React.Component<{}, IState> {
     return this.store.getCanEdit();
   };
 
+  private onCreatePolygon = (polygon: IPolygonToCreate) => {
+    if (this.state.openItem.type === "content") {
+      const groupid = this.state.openItem.groupid;
+      const itemid = this.state.openItem.id;
+      this.store.onCreatePolygon(polygon, groupid, itemid);
+    }
+  };
+
+  private onDeletePolygon = (id: string) => {
+    if (this.state.openItem.type === "content") {
+      const groupid = this.state.openItem.groupid;
+      const itemid = this.state.openItem.id;
+      this.store.onDeletePolygon(id, groupid, itemid);
+    }
+  };
+
+  private onEditPolygon = (polygon: IPolygon) => {
+    if (this.state.openItem.type === "content") {
+      const groupid = this.state.openItem.groupid;
+      const itemid = this.state.openItem.id;
+      this.store.onEditPolygon(polygon, groupid, itemid);
+    }
+  };
+
   render() {
     return (
       <>
@@ -108,6 +137,9 @@ class App extends React.Component<{}, IState> {
           openItem={this.state.openItem}
           onLogin={this.onLogin}
           loading={this.getLoading()}
+          onCreatePolygon={this.onCreatePolygon}
+          onDeletePolygon={this.onDeletePolygon}
+          onEditPolygon={this.onEditPolygon}
         />
       </>
     );

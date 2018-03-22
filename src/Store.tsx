@@ -2,7 +2,8 @@ import {
   IMenuGroup,
   IMenuGroupDb,
   IItemToCreate,
-  IPolygon
+  IPolygon,
+  IPolygonToCreate
 } from "./Interfaces";
 import * as Firebase from "firebase";
 
@@ -19,12 +20,12 @@ Firebase.initializeApp(config);
 type Update = () => void;
 
 const getPolygons = (polygons: any): IPolygon[] => {
-  console.log(polygons);
   if (polygons) {
-    console.log("tem");
-    return [];
+    return Object.keys(polygons || {}).map(id => ({
+      ...polygons[id],
+      id
+    }));
   }
-  console.log("nao tem ");
   return [];
 };
 
@@ -60,6 +61,53 @@ class Store {
       throw Error("Item nao encontrado");
     }
     return item;
+  };
+
+  public onDeletePolygon = (
+    id: string,
+    groupid: string,
+    itemid: string
+  ) => {
+    Firebase.database()
+      .ref("/groups")
+      .child(groupid)
+      .child("items")
+      .child(itemid)
+      .child("polygons")
+      .child(id)
+      .set(null);
+  };
+
+  public onEditPolygon = (
+    polygon: IPolygon,
+    groupid: string,
+    itemid: string
+  ) => {
+    const newPolygon = { ...polygon };
+    delete newPolygon.id;
+
+    Firebase.database()
+      .ref("/groups")
+      .child(groupid)
+      .child("items")
+      .child(itemid)
+      .child("polygons")
+      .child(polygon.id)
+      .set(newPolygon);
+  };
+
+  public onCreatePolygon = (
+    polygon: IPolygonToCreate,
+    groupid: string,
+    itemid: string
+  ) => {
+    Firebase.database()
+      .ref("/groups")
+      .child(groupid)
+      .child("items")
+      .child(itemid)
+      .child("polygons")
+      .push(polygon);
   };
 
   private updateUrls = async () => {

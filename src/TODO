@@ -1,14 +1,2 @@
-[x] bulma
-[x] add firebase
-[x] loginPage
-
-[x] createGroup
-[x] createItem
-
-[ ] editor
-  [ ] converter os cliques pro tamanho do viewbox na hora da criação
-  [ ] colocar as unidades do poligono em funcao do viewbox q eh o w/h da imagem
-  [ ] exibir o polígono com base nas unidades em função do tamanho do viewbox
-[ ] visualizer
-
-[ ] aboutPage
+[ ] deletar seção
+[ ] deletar item

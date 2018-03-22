@@ -1,9 +1,15 @@
 import * as React from "react";
 import Renderer from "./Renderer";
-import { IPolygon, IPathPoint } from "../Interfaces";
-import { EDITBAR_SIZE } from "./Constants";
-
-const editingFill = { r: 255, g: 0, b: 0 };
+import {
+  IPolygon,
+  IPathPoint,
+  IPolygonToCreate
+} from "../Interfaces";
+import {
+  EDITBAR_SIZE,
+  HERO_SIZE,
+  EDITBAR_BACKGROUND
+} from "./Constants";
 
 class Editor extends React.Component<
   {
@@ -15,54 +21,96 @@ class Editor extends React.Component<
     vbw: number;
     vbh: number;
     src: string;
+    onCreatePolygon: (polygon: IPolygonToCreate) => void;
+    onEditPolygon: (polygon: IPolygon) => void;
+    onChangeFocus: (id: string) => void;
   },
   {
+    editing: boolean;
+    editingId: string;
     creating: boolean;
     saving: boolean;
     creatingPath: IPathPoint[];
     creatingName: string;
     creatingDescription: string;
+    mouseCoordinate: IPathPoint;
+    paths: IPathPoint[][];
   }
 > {
   state = {
+    editing: false,
+    editingId: "",
     creating: false,
     saving: false,
     creatingPath: [],
     creatingName: "",
-    creatingDescription: ""
+    creatingDescription: "",
+    mouseCoordinate: { x: 0, y: 0 },
+    paths: []
   };
 
-  private onCreate = () => {
+  public setEditing = (polygon: IPolygon) => {
     this.setState({
+      editing: true,
       creating: true,
-      saving: false,
-      creatingPath: [],
-      creatingName: "",
-      creatingDescription: ""
+      saving: true,
+      paths: polygon.paths,
+      creatingName: polygon.title,
+      creatingDescription: polygon.description,
+      editingId: polygon.id
+    });
+  };
+
+  private renderer: Renderer | null = null;
+
+  private onCreate = () => {
+    this.setState(state => {
+      return {
+        creating: true,
+        saving: false
+      };
     });
   };
 
   private onSave = () => {
-    this.setState({
+    this.setState(state => ({
       saving: true,
       creating: false,
-      creatingName: "",
-      creatingDescription: ""
-    });
+      creatingPath: [],
+      paths: [...state.paths, state.creatingPath]
+    }));
   };
 
   private onCancel = () => {
     this.setState({
+      editing: false,
       creating: false,
       saving: false,
       creatingPath: [],
       creatingName: "",
-      creatingDescription: ""
+      creatingDescription: "",
+      paths: []
     });
   };
 
   private onConfirm = () => {
-    console.log(this.state);
+    if (this.state.editing) {
+      this.props.onEditPolygon({
+        id: this.state.editingId,
+        paths: this.state.paths,
+        description: this.state.creatingDescription,
+        title: this.state.creatingName
+      });
+    } else {
+      this.props.onCreatePolygon({
+        paths: this.state.paths,
+        description: this.state.creatingDescription,
+        title: this.state.creatingName
+      });
+    }
+    this.setState({
+      editing: false
+    });
   };
 
   private onChangeName = (
@@ -70,55 +118,183 @@ class Editor extends React.Component<
   ) => {
     this.setState({ creatingName: ev.target.value });
   };
+
   private onChangeDescription = (
-    ev: React.ChangeEvent<HTMLInputElement>
+    ev: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
     this.setState({ creatingDescription: ev.target.value });
   };
+
+  public changeFocus = (id: string) => {
+    if (this.renderer) {
+      this.renderer.changeFocus(id);
+    }
+  };
+
   private renderEditorBar = () => {
     if (this.state.saving) {
       return (
-        <div>
-          Nome: <input onChange={this.onChangeName} />
-          Descrição:{" "}
-          <input onChange={this.onChangeDescription} />
-          <button onClick={this.onConfirm}>
-            CONFIRMAR
-          </button>
-          <button onClick={this.onCancel}>CANCELAR</button>
+        <div
+          style={{
+            position: "absolute",
+            zIndex: 5,
+            backgroundColor: EDITBAR_BACKGROUND,
+            left: 0,
+            padding: 12,
+            width: "100vw"
+          }}
+        >
+          <div className="field">
+            <label className="label has-text-light">
+              Nome
+            </label>
+            <div
+              className="control"
+              style={{ maxWidth: 512 }}
+            >
+              <input
+                className="input"
+                onChange={this.onChangeName}
+                type="text"
+                placeholder="Nome da marcação"
+                value={this.state.creatingName}
+              />
+            </div>
+          </div>
+          <div className="field">
+            <label className="label has-text-light">
+              Descrição
+            </label>
+            <div
+              className="control"
+              style={{ maxWidth: 512 }}
+            >
+              <textarea
+                onChange={this.onChangeDescription}
+                className="textarea"
+                placeholder="Texto de descrição"
+                value={this.state.creatingDescription}
+              />
+            </div>
+          </div>
+          <div className="field">
+            <div className="control">
+              <button
+                onClick={this.onConfirm}
+                className="button is-light"
+              >
+                CONFIRMAR
+              </button>
+            </div>
+          </div>
+          <div className="field">
+            <div className="control">
+              <button
+                onClick={this.onCancel}
+                className="button is-light"
+              >
+                CANCELAR
+              </button>
+            </div>
+          </div>
+          <div className="field">
+            <div className="control">
+              <button
+                onClick={this.onCreate}
+                className="button is-light"
+              >
+                CRIAR OUTRA MARCAÇÃO
+              </button>
+            </div>
+          </div>
         </div>
       );
     }
     if (this.state.creating) {
       return (
-        <div>
-          Clique na foto para marcar os pontos do polígono.
-          <button onClick={this.onSave}>SALVAR</button>
-          <button onClick={this.onCancel}>CANCELAR</button>
-        </div>
+        <>
+          <a
+            className="button is-light"
+            onClick={this.onSave}
+            style={{ marginRight: 6 }}
+          >
+            SALVAR
+          </a>
+          <a
+            className="button is-light"
+            onClick={this.onCancel}
+          >
+            CANCELAR
+          </a>
+        </>
       );
     }
     return (
-      <div>
-        <button onClick={this.onCreate}>ADICIONAR</button>
-      </div>
+      <a
+        onClick={this.onCreate}
+        className="button is-light"
+      >
+        ADICIONAR
+      </a>
     );
   };
 
   private getPolygons = (): IPolygon[] => {
     const editingPoligon: IPolygon = {
-      fill: editingFill,
       id: "editing",
-      path: this.state.creatingPath
+      paths: [...this.state.paths, this.state.creatingPath],
+      description: this.state.creatingDescription,
+      title: this.state.creatingName
     };
 
-    return this.state.creating || this.state.saving
-      ? [editingPoligon]
-      : this.props.polygons;
+    if (this.state.creating || this.state.saving) {
+      if (this.state.saving) {
+        return [...this.props.polygons, editingPoligon];
+      } else {
+        // se tá editando, sempre mostra a posição do mouse
+        const newEditignPolygon = { ...editingPoligon };
+
+        let newEditingPolygonPaths = [
+          ...newEditignPolygon.paths
+        ];
+
+        let newLastPath = [
+          ...newEditingPolygonPaths[
+            newEditingPolygonPaths.length - 1
+          ]
+        ];
+
+        newEditingPolygonPaths.splice(-1, 1);
+
+        newLastPath.push({
+          x: this.state.mouseCoordinate.x,
+          y: this.state.mouseCoordinate.y
+        });
+
+        newEditingPolygonPaths = [
+          ...newEditingPolygonPaths,
+          newLastPath
+        ];
+
+        newEditignPolygon.paths = newEditingPolygonPaths;
+
+        return [...this.props.polygons, newEditignPolygon];
+      }
+    }
+    return this.props.polygons;
+  };
+
+  private onMoveCreating = (x: number, y: number) => {
+    if (!this.state.creating || this.state.saving) {
+      return;
+    }
+    this.setState(state => ({
+      mouseCoordinate: { x, y }
+    }));
   };
 
   private onClickCreating = (x: number, y: number) => {
-    if (!this.state.creating) {
+    if (!this.state.creating || this.state.saving) {
       return;
     }
     this.setState(state => {
@@ -130,14 +306,41 @@ class Editor extends React.Component<
     });
   };
 
+  private onContextMenu = () => {
+    if (!this.state.creating || this.state.saving) {
+      return;
+    }
+
+    this.setState(state => {
+      const newPath = [...state.creatingPath];
+      newPath.splice(-1, 1); // remove o último
+      return {
+        creatingPath: newPath
+      };
+    });
+  };
   render() {
     // "200,10 250,190 160,210"
     return (
-      <div style={{ position: "absolute" }}>
-        <div style={{ height: EDITBAR_SIZE }}>
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          top: HERO_SIZE
+        }}
+      >
+        <div
+          style={{
+            height: EDITBAR_SIZE,
+            width: "100vw",
+            backgroundColor: EDITBAR_BACKGROUND,
+            padding: 6
+          }}
+        >
           {this.renderEditorBar()}
         </div>
         <Renderer
+          ref={ref => (this.renderer = ref)}
           vbw={this.props.vbw}
           vbh={this.props.vbh}
           height={this.props.height}
@@ -145,9 +348,12 @@ class Editor extends React.Component<
           outerWidth={this.props.outerWidth}
           outerHeight={this.props.outerHeight}
           onClickCreating={this.onClickCreating}
+          onMoveCreating={this.onMoveCreating}
+          onContextMenu={this.onContextMenu}
           editing={this.state.creating || this.state.saving}
           polygons={this.getPolygons()}
           src={this.props.src}
+          onChangeFocus={this.props.onChangeFocus}
         />
       </div>
     );

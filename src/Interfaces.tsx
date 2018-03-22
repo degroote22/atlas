@@ -9,15 +9,22 @@ export interface IRgb {
   b: number;
 }
 
-export interface IPolygon {
+export type IPath = IPathPoint[];
+
+export interface IPolygonToCreate {
+  paths: IPath[];
+  description: string;
+  title: string;
+}
+
+export interface IPolygon extends IPolygonToCreate {
   id: string;
-  path: IPathPoint[];
-  fill: IRgb;
 }
 
 export interface IPolygonToRender extends IPolygon {
   editing: boolean;
   hidden: boolean;
+  fill: IRgb;
 }
 
 export interface IMenuGroupDb {

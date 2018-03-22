@@ -1,27 +1,51 @@
 import * as React from "react";
-import { IMenuItemContent } from "../Interfaces";
+import {
+  IMenuItemContent,
+  IPolygonToCreate,
+  IPolygon
+} from "../Interfaces";
 import Editor from "./Editor";
 import Renderer from "./Renderer";
 import {
   EDITBAR_SIZE,
   HERO_SIZE,
-  NUMS_FIX
+  NUMS_FIX,
+  CARD_MARGIN
 } from "./Constants";
+import List from "./List";
 
 interface IProps {
   item: IMenuItemContent;
   canEdit: boolean;
+  onCreatePolygon: (polygon: IPolygonToCreate) => void;
+  onDeletePolygon: (id: string) => void;
+  onEditPolygon: (Polygon: IPolygon) => void;
 }
 
 interface IState {
   width: number;
   height: number;
+  focus: string;
 }
 
 class PhotoItem extends React.Component<IProps, IState> {
   state = {
     width: 0,
-    height: 0
+    height: 0,
+    focus: ""
+  };
+
+  private renderer: Renderer | Editor | null = null;
+
+  private onChangeFocusFromList = (id: string) => {
+    if (this.renderer) {
+      this.renderer.changeFocus(id);
+    }
+    this.setState({ focus: id });
+  };
+
+  private onChangeFocus = (id: string) => {
+    this.setState({ focus: id });
   };
 
   componentDidMount() {
@@ -31,6 +55,12 @@ class PhotoItem extends React.Component<IProps, IState> {
       this.setSizes();
     });
   }
+
+  private onEditClick = (polygon: IPolygon) => {
+    if (this.renderer) {
+      this.renderer.setEditing(polygon);
+    }
+  };
 
   private setSizes = () => {
     const width = window.innerWidth;
@@ -47,8 +77,6 @@ class PhotoItem extends React.Component<IProps, IState> {
   };
 
   render() {
-    const url = this.props.item.url;
-
     const itemWidth = this.props.item.width;
     const itemHeight = this.props.item.height;
 
@@ -127,11 +155,11 @@ class PhotoItem extends React.Component<IProps, IState> {
     const isVerticalSplit =
       verticalSplitArea > horizontalSplitArea;
 
+    const url = this.props.item.url;
     if (!url) {
       return null;
     }
 
-    // if (isVerticalSplit) {
     const styles = isVerticalSplit
       ? {
           wrapper: {
@@ -177,33 +205,8 @@ class PhotoItem extends React.Component<IProps, IState> {
             )
           }
         };
-    // }
     return (
       <>
-        {this.props.canEdit ? (
-          <Editor
-            polygons={this.props.item.polygons}
-            width={styles.img.width}
-            height={styles.img.height}
-            outerHeight={styles.splitter.height}
-            outerWidth={styles.splitter.width}
-            vbh={this.props.item.height}
-            vbw={this.props.item.width}
-            src={url}
-          />
-        ) : (
-          <Renderer
-            vbh={this.props.item.height}
-            vbw={this.props.item.width}
-            polygons={this.props.item.polygons}
-            width={styles.img.width}
-            height={styles.img.height}
-            outerHeight={styles.splitter.height}
-            outerWidth={styles.splitter.width}
-            editing={false}
-            src={url}
-          />
-        )}
         <div style={styles.wrapper as any}>
           <div
             style={{
@@ -212,14 +215,51 @@ class PhotoItem extends React.Component<IProps, IState> {
               alignItems: "center"
             }}
           >
-            {/* <img style={styles.img} src={url} /> */}
+            {this.props.canEdit ? (
+              <Editor
+                ref={ref => (this.renderer = ref)}
+                onCreatePolygon={this.props.onCreatePolygon}
+                onEditPolygon={this.props.onEditPolygon}
+                polygons={this.props.item.polygons}
+                width={styles.img.width}
+                height={styles.img.height}
+                outerHeight={styles.splitter.height}
+                outerWidth={styles.splitter.width}
+                vbh={this.props.item.height}
+                vbw={this.props.item.width}
+                src={url}
+                onChangeFocus={this.onChangeFocus}
+              />
+            ) : (
+              <Renderer
+                ref={ref => (this.renderer = ref)}
+                vbh={this.props.item.height}
+                vbw={this.props.item.width}
+                polygons={this.props.item.polygons}
+                width={styles.img.width}
+                height={styles.img.height}
+                outerHeight={styles.splitter.height}
+                outerWidth={styles.splitter.width}
+                editing={false}
+                src={url}
+                onChangeFocus={this.onChangeFocus}
+              />
+            )}
           </div>
           <div
             style={{
-              ...styles.splitter
+              ...styles.splitter,
+              paddingLeft: CARD_MARGIN
             }}
           >
-            asdasdasdasd
+            <List
+              focus={this.state.focus}
+              item={this.props.item}
+              onChangeFocus={this.onChangeFocusFromList}
+              canEdit={this.props.canEdit}
+              onDelete={this.props.onDeletePolygon}
+              onEdit={this.onEditClick}
+            />
           </div>
         </div>
       </>
