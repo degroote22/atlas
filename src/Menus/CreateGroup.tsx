@@ -23,7 +23,7 @@ class CreateGroup extends React.Component<IProps, IState> {
 
   render() {
     return (
-      <section className="hero is-success">
+      <section className="hero is-info">
         <div className="hero-body">
           <div className="container">
             <h1 className="title">Criar nova seção</h1>

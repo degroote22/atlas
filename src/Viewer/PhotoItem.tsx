@@ -19,6 +19,7 @@ interface IProps {
   canEdit: boolean;
   onCreatePolygon: (polygon: IPolygonToCreate) => void;
   onDeletePolygon: (id: string) => void;
+  onDeleteItem: (groupid: string, itemid: string) => void;
   onEditPolygon: (Polygon: IPolygon) => void;
 }
 
@@ -36,6 +37,13 @@ class PhotoItem extends React.Component<IProps, IState> {
   };
 
   private renderer: Renderer | Editor | null = null;
+
+  private onDeleteItem = () => {
+    this.props.onDeleteItem(
+      this.props.item.groupid,
+      this.props.item.id
+    );
+  };
 
   private onChangeFocusFromList = (id: string) => {
     if (this.renderer) {
@@ -229,6 +237,7 @@ class PhotoItem extends React.Component<IProps, IState> {
                 vbw={this.props.item.width}
                 src={url}
                 onChangeFocus={this.onChangeFocus}
+                onDeleteItem={this.onDeleteItem}
               />
             ) : (
               <Renderer
@@ -248,7 +257,8 @@ class PhotoItem extends React.Component<IProps, IState> {
           </div>
           <div
             style={{
-              ...styles.splitter,
+              width: styles.splitter.width,
+              display: "flex",
               paddingLeft: CARD_MARGIN
             }}
           >

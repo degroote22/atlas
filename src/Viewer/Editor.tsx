@@ -8,7 +8,8 @@ import {
 import {
   EDITBAR_SIZE,
   HERO_SIZE,
-  EDITBAR_BACKGROUND
+  EDITBAR_BACKGROUND,
+  CARD_MARGIN
 } from "./Constants";
 
 class Editor extends React.Component<
@@ -24,6 +25,7 @@ class Editor extends React.Component<
     onCreatePolygon: (polygon: IPolygonToCreate) => void;
     onEditPolygon: (polygon: IPolygon) => void;
     onChangeFocus: (id: string) => void;
+    onDeleteItem: () => void;
   },
   {
     editing: boolean;
@@ -230,13 +232,29 @@ class Editor extends React.Component<
       );
     }
     return (
-      <a
-        onClick={this.onCreate}
-        className="button is-light"
-      >
-        ADICIONAR
-      </a>
+      <>
+        <a
+          onClick={this.onCreate}
+          className="button is-light"
+        >
+          ADICIONAR
+        </a>
+        <a
+          onClick={this.onDelete}
+          style={{ marginLeft: CARD_MARGIN }}
+          className="button is-light"
+        >
+          EXCLUIR ITEM
+        </a>
+      </>
     );
+  };
+
+  private onDelete = () => {
+    const ok = confirm("Excluir item?");
+    if (ok) {
+      this.props.onDeleteItem();
+    }
   };
 
   private getPolygons = (): IPolygon[] => {

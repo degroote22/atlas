@@ -17,6 +17,7 @@ interface IProps {
   canEdit: boolean;
   loading: boolean;
   onCreateGroup: (title: string) => void;
+  onDeleteGroup: (groupid: string) => void;
   onCreateItem: (
     groupid: string,
     item: IItemToCreate
@@ -66,6 +67,7 @@ class Menu extends React.Component<IProps> {
         canEdit={this.props.canEdit}
         loading={this.props.loading}
         onCreateItem={this.props.onCreateItem}
+        onDeleteGroup={this.props.onDeleteGroup}
         dark={index % 2 !== 0}
       >
         {group.items.map(item => (

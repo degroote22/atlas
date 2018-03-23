@@ -78,6 +78,25 @@ class Store {
       .set(null);
   };
 
+  public onDeleteGroup = (groupid: string) => {
+    Firebase.database()
+      .ref("/groups")
+      .child(groupid)
+      .set(null);
+  };
+
+  public onDeleteItem = (
+    groupid: string,
+    itemid: string
+  ) => {
+    Firebase.database()
+      .ref("/groups")
+      .child(groupid)
+      .child("items")
+      .child(itemid)
+      .set(null);
+  };
+
   public onEditPolygon = (
     polygon: IPolygon,
     groupid: string,
@@ -169,6 +188,8 @@ class Store {
             console.error(
               "Não há dados do grupo, mas recebeu"
             );
+            this.menuGroups = [];
+            this.update();
             return;
           }
 

@@ -17,6 +17,7 @@ interface IProps {
   onSignout: () => void;
   onCreatePolygon: (polygon: IPolygonToCreate) => void;
   onDeletePolygon: (id: string) => void;
+  onDeleteItem: (groupid: string, itemid: string) => void;
   onEditPolygon: (polygon: IPolygon) => void;
 }
 
@@ -44,6 +45,7 @@ class Router extends React.Component<IProps> {
         onCreatePolygon={this.props.onCreatePolygon}
         onDeletePolygon={this.props.onDeletePolygon}
         onEditPolygon={this.props.onEditPolygon}
+        onDeleteItem={this.props.onDeleteItem}
       />
     );
   };

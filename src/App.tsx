@@ -17,6 +17,12 @@ interface IState {
   openItem: IMenuItem;
 }
 
+const DEFAULT_OPEN = {
+  title: "Sobre",
+  type: "default",
+  payload: "about"
+};
+
 class App extends React.Component<{}, IState> {
   private update = () => {
     this.setState((s: any) => {
@@ -39,11 +45,7 @@ class App extends React.Component<{}, IState> {
     // width: 0,
     // height: 0,
     menuHidden: false,
-    openItem: {
-      title: "Sobre",
-      type: "default",
-      payload: "about"
-    } as IMenuItem
+    openItem: DEFAULT_OPEN as IMenuItem
   };
 
   private openMenu = () => {
@@ -113,6 +115,33 @@ class App extends React.Component<{}, IState> {
     }
   };
 
+  private onDeleteItem = (
+    groupid: string,
+    itemid: string
+  ) => {
+    this.setState(
+      {
+        openItem: DEFAULT_OPEN as IMenuItem,
+        menuHidden: false
+      },
+      () => {
+        this.store.onDeleteItem(groupid, itemid);
+      }
+    );
+  };
+
+  private onDeleteGroup = (groupid: string) => {
+    this.setState(
+      {
+        openItem: DEFAULT_OPEN as IMenuItem,
+        menuHidden: false
+      },
+      () => {
+        this.store.onDeleteGroup(groupid);
+      }
+    );
+  };
+
   render() {
     return (
       <>
@@ -125,6 +154,7 @@ class App extends React.Component<{}, IState> {
           loading={this.getLoading()}
           onCreateGroup={this.onCreateGroup}
           onCreateItem={this.onCreateItem}
+          onDeleteGroup={this.onDeleteGroup}
         />
         <MenuBar
           onClick={this.openMenu}
@@ -140,6 +170,7 @@ class App extends React.Component<{}, IState> {
           onCreatePolygon={this.onCreatePolygon}
           onDeletePolygon={this.onDeletePolygon}
           onEditPolygon={this.onEditPolygon}
+          onDeleteItem={this.onDeleteItem}
         />
       </>
     );
