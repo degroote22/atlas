@@ -144,26 +144,22 @@ class Store {
           .child(item.id + "." + item.extension);
 
         const p = () =>
-          storageRef.getDownloadURL().then(url => ({
-            ...item,
-            url
-          }));
+          storageRef
+            .getDownloadURL()
+            .then(url => ({
+              ...item,
+              url
+            }))
+            .catch(err => {
+              alert("Erro ao baixar foto de " + item.title);
+              // if (this.retryLock < 5) {
+              //   this.retryLock++;
+              //   setTimeout(() => p(), 5000);
+              // }
+              return { ...item, url: "" };
+            });
 
-        // UGLYYYY HACK
-
-        return p().catch(async err => {
-          console.error(err, "retrying...");
-          await new Promise((rs, rj) =>
-            setTimeout(rs, 5000)
-          );
-          return p().catch(async err => {
-            console.error(err, "retrying2...");
-            await new Promise((rs, rj) =>
-              setTimeout(rs, 5000)
-            );
-            return p();
-          });
-        });
+        return p();
       });
 
       const items = await Promise.all(_promises);
@@ -287,31 +283,42 @@ class Store {
     groupid: string,
     item: IItemToCreate
   ) => {
-    // create the ref
+    console.log("creating....22222");
+    try {
+      const nameSplit = item.file.name.split(".");
+      const extension = nameSplit[nameSplit.length - 1];
+      const res = await Firebase.database()
+        .ref("/groups")
+        .child(groupid)
+        .child("items")
+        .push();
 
-    const nameSplit = item.file.name.split(".");
-    const extension = nameSplit[nameSplit.length - 1];
-    const res = await Firebase.database()
-      .ref("/groups")
-      .child(groupid)
-      .child("items")
-      .push({
-        title: item.title,
-        width: item.width,
-        height: item.height,
-        extension
-      });
+      const key = res.key;
 
-    const key = res.key;
+      const filename = key + "." + extension;
+      const storageRef = Firebase.storage()
+        .ref()
+        .child("images");
 
-    const filename = key + "." + extension;
-    const storageRef = Firebase.storage()
-      .ref()
-      .child("images");
+      const imageRef = storageRef.child(filename);
 
-    const imageRef = storageRef.child(filename);
+      await imageRef.put(item.file);
 
-    await imageRef.put(item.file);
+      await Firebase.database()
+        .ref("/groups")
+        .child(groupid)
+        .child("items")
+        .child(key)
+        .set({
+          title: item.title,
+          width: item.width,
+          height: item.height,
+          extension
+        });
+    } catch (err) {
+      console.error("Erro ao criar imagem");
+      console.error(err);
+    }
   };
 
   // public updateMenuGroups = () => {

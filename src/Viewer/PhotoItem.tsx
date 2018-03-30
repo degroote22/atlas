@@ -164,9 +164,10 @@ class PhotoItem extends React.Component<IProps, IState> {
       verticalSplitArea > horizontalSplitArea;
 
     const url = this.props.item.url;
-    if (!url) {
-      return null;
-    }
+
+    // if (!url) {
+    //   return null;
+    // }
 
     const styles = isVerticalSplit
       ? {

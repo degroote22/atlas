@@ -231,6 +231,7 @@ class Editor extends React.Component<
         </>
       );
     }
+
     return (
       <>
         <a
@@ -244,7 +245,7 @@ class Editor extends React.Component<
           style={{ marginLeft: CARD_MARGIN }}
           className="button is-light"
         >
-          EXCLUIR ITEM
+          EXCLUIR FOTO
         </a>
       </>
     );

@@ -45,28 +45,37 @@ class LoginPage extends React.Component<IProps, IState> {
   render() {
     if (this.props.isLogged) {
       return (
-        <div style={{ padding: 32 }}>
-          <div className="field">
-            <button
-              className={cn([
-                "button",
-                "is-fullwidth",
-                "is-danger",
-                this.props.loading ? "is-loading" : ""
-              ])}
-              onClick={this.props.onSignout}
-              disabled={this.props.loading}
-            >
-              Sair
-            </button>
+        <section className="hero is-light">
+          <div className="hero-body">
+            <div className="container">
+              <div style={{ padding: 32, maxWidth: 512 }}>
+                <div className="field">
+                  <button
+                    className={cn([
+                      "button",
+                      "is-fullwidth",
+                      "is-danger",
+                      this.props.loading ? "is-loading" : ""
+                    ])}
+                    onClick={this.props.onSignout}
+                    disabled={this.props.loading}
+                  >
+                    Sair
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+        </section>
       );
     }
     return (
       <section className="hero is-light">
         <div className="hero-body">
-          <div className="container">
+          <div
+            className="container"
+            style={{ maxWidth: 512 }}
+          >
             <form
               onSubmit={e => {
                 e.preventDefault();
