@@ -1,5 +1,6 @@
 import * as React from "react";
 import { IMenuItemContent, IPolygon } from "../Interfaces";
+import * as ReactList from "react-list";
 
 interface IProps {
   onChangeFocus: (id: string) => void;
@@ -76,25 +77,62 @@ class PolygonCard extends React.Component<
 }
 
 class List extends React.Component<IProps> {
+  private list: ReactList | null = null;
+
+  componentWillReceiveProps(np: IProps) {
+    // if (this.props.focus !== np.focus) {
+    const index = np.item.polygons.findIndex(
+      x => x.id === np.focus
+    );
+
+    if (this.list) {
+      this.list.scrollTo(index);
+    }
+    // }
+  }
+
+  private renderItem = (index: number, key: string) => {
+    const polygon = this.props.item.polygons[index];
+    return (
+      <PolygonCard
+        key={key}
+        polygon={polygon}
+        focus={this.props.focus}
+        onChangeFocus={this.props.onChangeFocus}
+        canEdit={this.props.canEdit}
+        onDelete={this.props.onDelete}
+        onEdit={this.props.onEdit}
+      />
+    );
+  };
+
   render() {
     const polygons = this.props.item.polygons;
     return (
-      <div>
-        {polygons.map(polygon => {
-          return (
-            <PolygonCard
-              key={polygon.id}
-              polygon={polygon}
-              focus={this.props.focus}
-              onChangeFocus={this.props.onChangeFocus}
-              canEdit={this.props.canEdit}
-              onDelete={this.props.onDelete}
-              onEdit={this.props.onEdit}
-            />
-          );
-        })}
-      </div>
+      <ReactList
+        ref={ref => (this.list = ref)}
+        itemRenderer={this.renderItem}
+        length={polygons.length}
+        type="simple"
+      />
     );
+    // return (
+    //   <div>
+    //     {polygons.map(polygon => {
+    //       return (
+    //         <PolygonCard
+    //           key={polygon.id}
+    //           polygon={polygon}
+    //           focus={this.props.focus}
+    //           onChangeFocus={this.props.onChangeFocus}
+    //           canEdit={this.props.canEdit}
+    //           onDelete={this.props.onDelete}
+    //           onEdit={this.props.onEdit}
+    //         />
+    //       );
+    //     })}
+    //   </div>
+    // );
   }
 }
 
