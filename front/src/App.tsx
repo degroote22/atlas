@@ -6,7 +6,8 @@ import {
   IMenuItem,
   IItemToCreate,
   IPolygonToCreate,
-  IPolygon
+  IPolygon,
+  IMenuItemContent
 } from "./Interfaces";
 import Router from "./Router";
 import Store from "./Store";
@@ -15,6 +16,9 @@ interface IState {
   // height: number;
   menuHidden: boolean;
   openItem: IMenuItem;
+  uploading: boolean;
+  uploadingPercent: string;
+  uploadingGroupid: string;
 }
 
 const DEFAULT_OPEN = {
@@ -45,7 +49,10 @@ class App extends React.Component<{}, IState> {
     // width: 0,
     // height: 0,
     menuHidden: false,
-    openItem: DEFAULT_OPEN as IMenuItem
+    openItem: DEFAULT_OPEN as IMenuItem,
+    uploading: false,
+    uploadingPercent: "",
+    uploadingGroupid: ""
   };
 
   private openMenu = () => {
@@ -77,14 +84,18 @@ class App extends React.Component<{}, IState> {
   };
 
   private onCreateGroup = (title: string) => {
-    this.store.onCreateGroup(title);
+    return this.store.onCreateGroup(title);
   };
 
   private onCreateItem = (
     groupid: string,
     payload: IItemToCreate
   ) => {
-    this.store.onCreateItem(groupid, payload);
+    return this.store.onCreateItem(
+      groupid,
+      payload,
+      this.setState.bind(this)
+    );
   };
 
   private getCanEdit = () => {
@@ -130,6 +141,10 @@ class App extends React.Component<{}, IState> {
     );
   };
 
+  private onUrlError = (item: IMenuItemContent) => {
+    this.store.onUrlError(item);
+  };
+
   private onDeleteGroup = (groupid: string) => {
     this.setState(
       {
@@ -155,23 +170,29 @@ class App extends React.Component<{}, IState> {
           onCreateGroup={this.onCreateGroup}
           onCreateItem={this.onCreateItem}
           onDeleteGroup={this.onDeleteGroup}
+          uploading={this.state.uploading}
+          uploadPercent={this.state.uploadingPercent}
+          uploadingGroupid={this.state.uploadingGroupid}
         />
         <MenuBar
           onClick={this.openMenu}
           title={Strings.Title}
           type="open"
         />
-        <Router
-          onSignout={this.onSignout}
-          canEdit={this.getCanEdit()}
-          openItem={this.state.openItem}
-          onLogin={this.onLogin}
-          loading={this.getLoading()}
-          onCreatePolygon={this.onCreatePolygon}
-          onDeletePolygon={this.onDeletePolygon}
-          onEditPolygon={this.onEditPolygon}
-          onDeleteItem={this.onDeleteItem}
-        />
+        {this.state.menuHidden && (
+          <Router
+            onSignout={this.onSignout}
+            canEdit={this.getCanEdit()}
+            openItem={this.state.openItem}
+            onLogin={this.onLogin}
+            loading={this.getLoading()}
+            onCreatePolygon={this.onCreatePolygon}
+            onDeletePolygon={this.onDeletePolygon}
+            onEditPolygon={this.onEditPolygon}
+            onDeleteItem={this.onDeleteItem}
+            onUrlError={this.onUrlError}
+          />
+        )}
       </>
     );
   }

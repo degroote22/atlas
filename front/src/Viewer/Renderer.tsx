@@ -27,19 +27,19 @@ interface IProps {
 
 class Renderer extends React.Component<
   IProps,
-  { showing: string; clicked: string; refresh: boolean }
+  { showing: string; clicked: string }
 > {
   state = {
     showing: "",
-    clicked: "",
-    refresh: false
+    clicked: ""
+    // refresh: false
   };
 
-  componentWillReceiveProps(nextProps: IProps) {
-    if (this.props.src !== nextProps.src) {
-      this.refreshPage();
-    }
-  }
+  // componentWillReceiveProps(nextProps: IProps) {
+  //   if (this.props.src !== nextProps.src) {
+  //     this.refreshPage();
+  //   }
+  // }
   public setEditing = (polygon: IPolygon) => {
     // Só pro compilador ficar feliz e não dar erro de tipo
   };
@@ -51,12 +51,12 @@ class Renderer extends React.Component<
     });
   }
 
-  private refreshPage = () => {
-    const that = this;
-    this.setState({ refresh: true }, () => {
-      that.setState({ refresh: false });
-    });
-  };
+  // private refreshPage = () => {
+  //   const that = this;
+  //   this.setState({ refresh: true }, () => {
+  //     that.setState({ refresh: false });
+  //   });
+  // };
 
   private onChangeFocus = () => {
     if (!this.props.onChangeFocus) {
@@ -159,9 +159,9 @@ class Renderer extends React.Component<
   };
 
   render() {
-    if (this.state.refresh) {
-      return null;
-    }
+    // if (this.state.refresh) {
+    //   return null;
+    // }
     return (
       <div
         style={{

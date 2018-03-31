@@ -3,7 +3,8 @@ import {
   IMenuGroupDb,
   IItemToCreate,
   IPolygon,
-  IPolygonToCreate
+  IPolygonToCreate,
+  IMenuItemContent
 } from "./Interfaces";
 import * as Firebase from "firebase";
 
@@ -129,6 +130,53 @@ class Store {
       .push(polygon);
   };
 
+  public onUrlError = (item: IMenuItemContent) => {
+    if (item.type !== "content") {
+      throw Error("Tipo de item nao reconhecido na geturl");
+    }
+    const storage = Firebase.storage();
+    const storageRef = storage
+      .ref()
+      .child("images")
+      .child("thumb_" + item.id + ".jpg");
+
+    storageRef
+      .getDownloadURL()
+      .then(url => {
+        if (item.type !== "content") {
+          throw Error("item inválido");
+        }
+        // coloca a url no item
+        const groupIndex = this.menuGroups.findIndex(
+          x => x.id === item.groupid
+        );
+        if (groupIndex === -1) {
+          throw Error("nao tem grupo");
+        }
+        const itemIndex = this.menuGroups[
+          groupIndex
+        ].items.findIndex(x => x.id === item.id);
+        if (groupIndex === -1) {
+          throw Error("nao tem item");
+        }
+        if (
+          this.menuGroups[groupIndex].items[itemIndex]
+            .type !== "content"
+        ) {
+          throw Error("item inválido 2");
+        }
+        (this.menuGroups[groupIndex].items[
+          itemIndex
+        ] as any).url = url;
+        this.update();
+      })
+      .catch(err => {
+        alert("Erro ao baixar foto. Atualize a página.");
+        console.error(err);
+        return { ...item, url: "" };
+      });
+  };
+
   private updateUrls = async () => {
     const promises = this.menuGroups.map(async group => {
       const _promises = group.items.map(item => {
@@ -141,7 +189,7 @@ class Store {
         const storageRef = storage
           .ref()
           .child("images")
-          .child(item.id + "." + item.extension);
+          .child("thumb_" + item.id + ".jpg");
 
         const p = () =>
           storageRef
@@ -151,11 +199,7 @@ class Store {
               url
             }))
             .catch(err => {
-              alert("Erro ao baixar foto de " + item.title);
-              // if (this.retryLock < 5) {
-              //   this.retryLock++;
-              //   setTimeout(() => p(), 5000);
-              // }
+              // alert("Erro ao baixar foto de " + item.title);
               return { ...item, url: "" };
             });
 
@@ -208,9 +252,6 @@ class Store {
           });
 
           this.menuGroups = groups;
-
-          this.update();
-
           this.updateUrls();
         } else {
           console.error("Nao há dados do grupo");
@@ -248,9 +289,12 @@ class Store {
       items: []
     };
 
-    Firebase.database()
-      .ref("/groups")
-      .push(group);
+    return new Promise((rs, rj) => {
+      Firebase.database()
+        .ref("/groups")
+        .push(group)
+        .then(rs, rj);
+    }) as Promise<void>;
   };
 
   public getCanEdit = () => this.user !== null;
@@ -281,9 +325,21 @@ class Store {
 
   public onCreateItem = async (
     groupid: string,
-    item: IItemToCreate
+    item: IItemToCreate,
+    setState: any
   ) => {
-    console.log("creating....22222");
+    const setProgress = (x: number, extra?: string) => {
+      const t = extra ? extra : "";
+      const n = x > 99 ? 99 : x;
+      setState({
+        uploading: true,
+        uploadingPercent: n + "% concluído. " + t,
+        uploadingGroupid: groupid
+      });
+    };
+
+    setProgress(0);
+
     try {
       const nameSplit = item.file.name.split(".");
       const extension = nameSplit[nameSplit.length - 1];
@@ -302,22 +358,70 @@ class Store {
 
       const imageRef = storageRef.child(filename);
 
-      await imageRef.put(item.file);
+      const task = imageRef.put(item.file);
 
-      await Firebase.database()
-        .ref("/groups")
-        .child(groupid)
-        .child("items")
-        .child(key)
-        .set({
-          title: item.title,
-          width: item.width,
-          height: item.height,
-          extension
-        });
+      return new Promise((rs, rj) => {
+        task.on(
+          "state_changed",
+          function(snapshot: any) {
+            // Observe state change events such as progress, pause, and resume
+            // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+            var progress = Math.floor(
+              snapshot.bytesTransferred /
+                snapshot.totalBytes *
+                100
+            );
+
+            setProgress(progress);
+
+            switch (snapshot.state) {
+              case Firebase.storage.TaskState.PAUSED: // or 'paused'
+                setProgress(progress, "Upload pausado");
+                break;
+              case Firebase.storage.TaskState.RUNNING: // or 'running'
+                // setProgress(progress, 'Upload em andamento')
+                break;
+            }
+          },
+          function(error) {
+            setState({
+              uploading: true,
+              uploadingPercent:
+                "Houve um erro no upload da imagem"
+            });
+            throw error;
+            // Handle unsuccessful uploads
+          },
+          function() {
+            // Handle successful uploads on complete
+            // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+            // var downloadURL = uploadTask.snapshot.downloadURL;
+            Firebase.database()
+              .ref("/groups")
+              .child(groupid)
+              .child("items")
+              .child(key)
+              .set({
+                title: item.title,
+                width: item.width,
+                height: item.height,
+                extension
+              })
+              .then(() => {
+                setState({ uploading: false });
+                rs();
+              });
+          }
+        );
+      }) as Promise<void>;
     } catch (err) {
+      setState({
+        uploading: true,
+        uploadingPercent: "Houve um erro no upload"
+      });
       console.error("Erro ao criar imagem");
       console.error(err);
+      return Promise.reject(JSON.stringify(err));
     }
   };
 

@@ -21,6 +21,7 @@ interface IProps {
   onDeletePolygon: (id: string) => void;
   onDeleteItem: (groupid: string, itemid: string) => void;
   onEditPolygon: (Polygon: IPolygon) => void;
+  onUrlError: (item: IMenuItemContent) => void;
 }
 
 interface IState {
@@ -57,11 +58,17 @@ class PhotoItem extends React.Component<IProps, IState> {
   };
 
   componentDidMount() {
+    if (this.props.item.url === "") {
+      this.props.onUrlError(this.props.item);
+    }
+
     this.setSizes();
 
-    window.addEventListener("resize", () => {
-      this.setSizes();
-    });
+    window.addEventListener("resize", this.setSizes);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.setSizes);
   }
 
   private onEditClick = (polygon: IPolygon) => {
@@ -214,6 +221,8 @@ class PhotoItem extends React.Component<IProps, IState> {
             )
           }
         };
+
+    const { vbh, vbw } = this.getRedimension();
     return (
       <>
         <div style={styles.wrapper as any}>
@@ -234,8 +243,8 @@ class PhotoItem extends React.Component<IProps, IState> {
                 height={styles.img.height}
                 outerHeight={styles.splitter.height}
                 outerWidth={styles.splitter.width}
-                vbh={this.props.item.height}
-                vbw={this.props.item.width}
+                vbh={vbh}
+                vbw={vbw}
                 src={url}
                 onChangeFocus={this.onChangeFocus}
                 onDeleteItem={this.onDeleteItem}
@@ -243,8 +252,8 @@ class PhotoItem extends React.Component<IProps, IState> {
             ) : (
               <Renderer
                 ref={ref => (this.renderer = ref)}
-                vbh={this.props.item.height}
-                vbw={this.props.item.width}
+                vbh={vbh}
+                vbw={vbw}
                 polygons={this.props.item.polygons}
                 width={styles.img.width}
                 height={styles.img.height}
@@ -258,9 +267,13 @@ class PhotoItem extends React.Component<IProps, IState> {
           </div>
           <div
             style={{
-              width: styles.splitter.width,
-              display: "flex",
-              paddingLeft: CARD_MARGIN
+              width:
+                styles.splitter.width - CARD_MARGIN * 2,
+              height: styles.splitter.height,
+              paddingLeft: CARD_MARGIN,
+              paddingRight: CARD_MARGIN,
+              overflow: "auto",
+              display: "block"
             }}
           >
             <List
@@ -270,12 +283,33 @@ class PhotoItem extends React.Component<IProps, IState> {
               canEdit={this.props.canEdit}
               onDelete={this.props.onDeletePolygon}
               onEdit={this.onEditClick}
+              height={styles.splitter.height}
+              width={styles.splitter.width}
             />
           </div>
         </div>
       </>
     );
   }
+
+  private getRedimension = () => {
+    const MAX = 1200;
+    const w = this.props.item.width;
+    const h = this.props.item.height;
+    if (w > h) {
+      // largura maior, largura fica com o máximo
+      const vbw = MAX;
+      const ratio = vbw / w;
+      const vbh = ratio * h;
+      return { vbw, vbh };
+    } else {
+      // altura maior, altura fica com o máximo
+      const vbh = MAX;
+      const ratio = vbh / h;
+      const vbw = ratio * w;
+      return { vbh, vbw };
+    }
+  };
 }
 
 export default PhotoItem;

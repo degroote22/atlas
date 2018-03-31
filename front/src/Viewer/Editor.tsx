@@ -111,7 +111,13 @@ class Editor extends React.Component<
       });
     }
     this.setState({
-      editing: false
+      editing: false,
+      creating: false,
+      saving: false,
+      creatingPath: [],
+      creatingName: "",
+      creatingDescription: "",
+      paths: []
     });
   };
 

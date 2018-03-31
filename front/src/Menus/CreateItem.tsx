@@ -6,41 +6,77 @@ interface IProps {
   onCreateItem: (
     groupid: string,
     item: IItemToCreate
-  ) => void;
+  ) => Promise<void>;
   groupid: string;
   grouptitle: string;
+  uploading: boolean;
+  uploadPercent: string;
+  uploadingGroupid: string;
 }
 
 interface IState {
-  newTitle: string;
-  fileName: string;
-  width: number;
-  height: number;
-  file: File | null;
+  readonly newTitle: string;
+  readonly fileName: string;
+  readonly width: number;
+  readonly height: number;
+  readonly file: File | null;
+  readonly error: boolean;
 }
+const initialState: IState = {
+  newTitle: "",
+  fileName: "",
+  width: 0,
+  height: 0,
+  file: null,
+  error: false
+};
 
 class CreateItem extends React.Component<IProps, IState> {
-  state = {
-    newTitle: "",
-    fileName: "",
-    width: 0,
-    height: 0,
-    file: null
-  };
+  readonly state = initialState;
 
   private onChangeTitle = (e: any) => {
     this.setState({ newTitle: e.target.value });
   };
 
+  private thisInstanceUploading = () => {
+    return (
+      this.props.uploading &&
+      this.props.uploadingGroupid === this.props.groupid
+    );
+  };
+
+  private isDisabled = () => {
+    return (
+      this.thisInstanceUploading() ||
+      this.state.file == null ||
+      this.state.newTitle.length === 0
+    );
+  };
+
   private onCreate = () => {
-    if (this.state.file !== null) {
-      this.props.onCreateItem(this.props.groupid, {
+    this.setState({ error: false });
+    if (this.isDisabled()) {
+      // Já tá criando um
+      // Não selecionou arquivo
+      // Não tem texto
+      return;
+    }
+
+    this.props
+      .onCreateItem(this.props.groupid, {
         title: this.state.newTitle,
         width: this.state.width,
         height: this.state.height,
         file: this.state.file as any
+      })
+      .then(() => {
+        this.setState(initialState);
+      })
+      .catch(() => {
+        // Vai vir com a mensagem de erro do upload...
+        this.setState({ error: true });
+        // this.setState(initialState);
       });
-    }
   };
 
   private onChangePhoto = (
@@ -68,6 +104,9 @@ class CreateItem extends React.Component<IProps, IState> {
   };
 
   render() {
+    const loading = this.thisInstanceUploading()
+      ? "is-loading"
+      : "";
     return (
       <>
         <h2 className="subtitle">
@@ -109,14 +148,23 @@ class CreateItem extends React.Component<IProps, IState> {
             />
           </div>
           <div className="control">
-            <a
-              className="button is-dark"
+            <button
+              disabled={this.isDisabled()}
+              className={"button is-dark " + loading}
               onClick={this.onCreate}
             >
               Criar
-            </a>
+            </button>
           </div>
         </div>
+
+        {this.thisInstanceUploading() && (
+          <div className="field">
+            {this.state.error && "Erro na criação."}
+            <br />
+            {this.props.uploadPercent}
+          </div>
+        )}
       </>
     );
   }

@@ -11,9 +11,12 @@ interface IProps {
   onCreateItem: (
     groupid: string,
     item: IItemToCreate
-  ) => void;
+  ) => Promise<void>;
   dark: boolean;
   id: string;
+  uploading: boolean;
+  uploadPercent: string;
+  uploadingGroupid: string;
 }
 
 class MenuGroup extends React.Component<IProps> {
@@ -27,6 +30,9 @@ class MenuGroup extends React.Component<IProps> {
               grouptitle={this.props.title}
               loading={this.props.loading}
               onCreateItem={this.props.onCreateItem}
+              uploading={this.props.uploading}
+              uploadPercent={this.props.uploadPercent}
+              uploadingGroupid={this.props.uploadingGroupid}
             />
           </div>
         </div>

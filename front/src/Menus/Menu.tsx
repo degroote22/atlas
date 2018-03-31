@@ -16,12 +16,15 @@ interface IProps {
   onMenuClick: (item: IMenuItem) => void;
   canEdit: boolean;
   loading: boolean;
-  onCreateGroup: (title: string) => void;
+  onCreateGroup: (title: string) => Promise<void>;
   onDeleteGroup: (groupid: string) => void;
   onCreateItem: (
     groupid: string,
     item: IItemToCreate
-  ) => void;
+  ) => Promise<void>;
+  uploading: boolean;
+  uploadPercent: string;
+  uploadingGroupid: string;
 }
 
 const groupsDefault: IMenuGroup[] = [
@@ -69,6 +72,9 @@ class Menu extends React.Component<IProps> {
         onCreateItem={this.props.onCreateItem}
         onDeleteGroup={this.props.onDeleteGroup}
         dark={index % 2 !== 0}
+        uploading={this.props.uploading}
+        uploadPercent={this.props.uploadPercent}
+        uploadingGroupid={this.props.uploadingGroupid}
       >
         {group.items.map(item => (
           <MenuItem
@@ -83,7 +89,7 @@ class Menu extends React.Component<IProps> {
   };
 
   private onCreateGroup = (title: string) => {
-    this.props.onCreateGroup(title);
+    return this.props.onCreateGroup(title);
   };
   private renderCreateGroup = () => (
     <CreateGroup

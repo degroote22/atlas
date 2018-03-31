@@ -1,6 +1,5 @@
 import * as React from "react";
 import { IMenuItemContent, IPolygon } from "../Interfaces";
-import { CARD_MARGIN } from "./Constants";
 
 interface IProps {
   onChangeFocus: (id: string) => void;
@@ -9,6 +8,8 @@ interface IProps {
   canEdit: boolean;
   onDelete: (id: string) => void;
   onEdit: (polygon: IPolygon) => void;
+  height: number;
+  width: number;
 }
 
 interface IPropsPolygonCard {
@@ -78,14 +79,7 @@ class List extends React.Component<IProps> {
   render() {
     const polygons = this.props.item.polygons;
     return (
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-          paddingRight: CARD_MARGIN
-        }}
-      >
+      <div>
         {polygons.map(polygon => {
           return (
             <PolygonCard

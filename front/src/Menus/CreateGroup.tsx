@@ -1,25 +1,42 @@
 import * as React from "react";
 interface IProps {
   loading: boolean;
-  onCreateGroup: (title: string) => void;
+  onCreateGroup: (title: string) => Promise<void>;
 }
 
-interface IState {
-  newTitle: string;
-}
+const initialState = {
+  newTitle: "",
+  error: false
+};
+
+type IState = Readonly<typeof initialState>;
 
 class CreateGroup extends React.Component<IProps, IState> {
-  state = {
-    newTitle: ""
-  };
+  readonly state: IState = initialState;
 
   private onChangeTitle = (event: any) => {
     this.setState({ newTitle: event.target.value });
   };
 
   private onCreate = () => {
-    this.props.onCreateGroup(this.state.newTitle);
+    if (this.isDisabled()) {
+      return;
+    }
+    this.setState({
+      error: false
+    });
+    this.props
+      .onCreateGroup(this.state.newTitle)
+      .then(() => {
+        this.setState(initialState);
+      })
+      .catch(() => {
+        this.setState({ error: true });
+      });
   };
+
+  private isDisabled = () =>
+    this.state.newTitle.length === 0;
 
   render() {
     return (
@@ -38,14 +55,22 @@ class CreateGroup extends React.Component<IProps, IState> {
                 />
               </div>
               <div className="control">
-                <a
+                <button
+                  disabled={this.isDisabled()}
                   className="button is-dark"
                   onClick={this.onCreate}
                 >
                   Criar
-                </a>
+                </button>
               </div>
             </div>
+            {this.state.error && (
+              <div className="field has-addons">
+                <p className="subtitle">
+                  Houve um erro no upload!
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </section>

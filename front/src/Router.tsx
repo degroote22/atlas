@@ -19,6 +19,7 @@ interface IProps {
   onDeletePolygon: (id: string) => void;
   onDeleteItem: (groupid: string, itemid: string) => void;
   onEditPolygon: (polygon: IPolygon) => void;
+  onUrlError: (item: IMenuItemContent) => void;
 }
 
 class Router extends React.Component<IProps> {
@@ -46,6 +47,7 @@ class Router extends React.Component<IProps> {
         onDeletePolygon={this.props.onDeletePolygon}
         onEditPolygon={this.props.onEditPolygon}
         onDeleteItem={this.props.onDeleteItem}
+        onUrlError={this.props.onUrlError}
       />
     );
   };
