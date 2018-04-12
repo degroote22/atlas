@@ -1,3 +1,0 @@
-type menuStatus =
-  | Closed
-  | Opened;

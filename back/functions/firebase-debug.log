@@ -170,3 +170,15 @@ query params: {"updateMask":"sourceArchiveUrl,name,labels,eventTrigger.resource,
  Thu Apr 12 2018 01:26:10 GMT-0300 (-03)
 [debug] [2018-04-12T04:26:11.728Z] <<< HTTP RESPONSE 200
 [debug] [2018-04-12T04:26:11.731Z] <<< HTTP RESPONSE 200
+[debug] [2018-04-12T04:26:13.731Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/YXRsYXMtc3RhZ2luZzIvdXMtY2VudHJhbDEvZGVsZXRlUGhvdG9zL2RsUFNzS2JWYkxB  
+  
+ Thu Apr 12 2018 01:26:13 GMT-0300 (-03)
+[debug] [2018-04-12T04:26:13.732Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/YXRsYXMtc3RhZ2luZzIvdXMtY2VudHJhbDEvZ2VuZXJhdGVUaHVtYm5haWwvcTVEaFBySEhSeVU  
+  
+ Thu Apr 12 2018 01:26:13 GMT-0300 (-03)
+[debug] [2018-04-12T04:26:15.005Z] <<< HTTP RESPONSE 200
+[debug] [2018-04-12T04:26:17.007Z] >>> HTTP REQUEST GET https://cloudfunctions.googleapis.com/v1/operations/YXRsYXMtc3RhZ2luZzIvdXMtY2VudHJhbDEvZGVsZXRlUGhvdG9zL2RsUFNzS2JWYkxB  
+  
+ Thu Apr 12 2018 01:26:17 GMT-0300 (-03)
+[debug] [2018-04-12T04:26:18.310Z] <<< HTTP RESPONSE 200
+[info] ✔  functions[deletePhotos]: Successful update operation. 
