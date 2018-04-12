@@ -1,15 +1,15 @@
 import * as React from "react";
 import { IMenuItem } from "../Interfaces";
+import RouterStore from "../Stores/RouterStore";
 
 interface IProps {
   item: IMenuItem;
-  onClick: (item: IMenuItem) => void;
   dark: boolean;
 }
 
 class MenuItem extends React.Component<IProps> {
   private onClick = () =>
-    this.props.onClick(this.props.item);
+    RouterStore.openMenuItem(this.props.item);
   render() {
     const cn = this.props.dark
       ? "button is-white"

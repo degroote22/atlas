@@ -1,8 +1,7 @@
 import * as React from "react";
-interface IProps {
-  loading: boolean;
-  onCreateGroup: (title: string) => Promise<void>;
-}
+import GroupStore from "../Stores/GroupStore";
+
+interface IProps {}
 
 const initialState = {
   newTitle: "",
@@ -25,8 +24,7 @@ class CreateGroup extends React.Component<IProps, IState> {
     this.setState({
       error: false
     });
-    this.props
-      .onCreateGroup(this.state.newTitle)
+    GroupStore.create(this.state.newTitle)
       .then(() => {
         this.setState(initialState);
       })
@@ -34,6 +32,18 @@ class CreateGroup extends React.Component<IProps, IState> {
         this.setState({ error: true });
       });
   };
+
+  private renderError() {
+    return (
+      this.state.error && (
+        <div className="field has-addons">
+          <p className="subtitle">
+            Houve um erro no upload!
+          </p>
+        </div>
+      )
+    );
+  }
 
   private isDisabled = () =>
     this.state.newTitle.length === 0;
@@ -64,13 +74,7 @@ class CreateGroup extends React.Component<IProps, IState> {
                 </button>
               </div>
             </div>
-            {this.state.error && (
-              <div className="field has-addons">
-                <p className="subtitle">
-                  Houve um erro no upload!
-                </p>
-              </div>
-            )}
+            {this.renderError()}
           </div>
         </div>
       </section>

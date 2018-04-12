@@ -1,50 +1,21 @@
 import * as React from "react";
 import CreateItem from "./CreateItem";
-import { IItemToCreate } from "../Interfaces";
+import GroupStore from "../Stores/GroupStore";
+import { IMenuItem } from "../Interfaces";
+import MenuItem from "./MenuItem";
 
 interface IProps {
   title: string;
   editable: boolean; // se esse item é editável
   canEdit: boolean; // se o usuário tem permissão
-  loading: boolean;
-  onDeleteGroup: (groupid: string) => void;
-  onCreateItem: (
-    groupid: string,
-    item: IItemToCreate
-  ) => Promise<void>;
   dark: boolean;
   id: string;
-  uploading: boolean;
-  uploadPercent: string;
-  uploadingGroupid: string;
+  items: IMenuItem[];
 }
 
 class MenuGroup extends React.Component<IProps> {
-  private renderCreateItem = () => {
-    return (
-      <div className="hero is-info">
-        <div className="hero-body">
-          <div className="container">
-            <CreateItem
-              groupid={this.props.id}
-              grouptitle={this.props.title}
-              loading={this.props.loading}
-              onCreateItem={this.props.onCreateItem}
-              uploading={this.props.uploading}
-              uploadPercent={this.props.uploadPercent}
-              uploadingGroupid={this.props.uploadingGroupid}
-            />
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   private onDelete = () => {
-    const ok = confirm("Excluir seção?");
-    if (ok) {
-      this.props.onDeleteGroup(this.props.id);
-    }
+    GroupStore.delete(this.props.id);
   };
 
   render() {
@@ -57,7 +28,13 @@ class MenuGroup extends React.Component<IProps> {
           <div className="hero-body">
             <div className="container">
               <h2 className="title">{this.props.title}</h2>
-              {this.props.children}
+              {this.props.items.map(item => (
+                <MenuItem
+                  item={item}
+                  key={item.id}
+                  dark={this.props.dark}
+                />
+              ))}
               {this.props.canEdit &&
                 this.props.editable && (
                   <a
@@ -71,8 +48,12 @@ class MenuGroup extends React.Component<IProps> {
           </div>
         </div>
         {this.props.canEdit &&
-          this.props.editable &&
-          this.renderCreateItem()}
+          this.props.editable && (
+            <CreateItem
+              groupid={this.props.id}
+              grouptitle={this.props.title}
+            />
+          )}
       </>
     );
   }

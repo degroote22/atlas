@@ -1,11 +1,6 @@
 import * as React from "react";
-import {
-  IMenuItemContent,
-  IPolygonToCreate,
-  IPolygon
-} from "../Interfaces";
+import { IMenuItemContent } from "../Interfaces";
 import Editor from "./Editor";
-import Renderer from "./Renderer";
 import {
   EDITBAR_SIZE,
   HERO_SIZE,
@@ -13,69 +8,68 @@ import {
   CARD_MARGIN
 } from "./Constants";
 import List from "./List";
+import ItemStore from "../Stores/ItemStore";
+import { ComponentBase } from "resub";
+import AuthStore from "../Stores/AuthStore";
+import DataStore from "../Stores/DataStore";
 
-interface IProps {
-  item: IMenuItemContent;
+interface IStateConnect {
   canEdit: boolean;
-  onCreatePolygon: (polygon: IPolygonToCreate) => void;
-  onDeletePolygon: (id: string) => void;
-  onDeleteItem: (groupid: string, itemid: string) => void;
-  onEditPolygon: (Polygon: IPolygon) => void;
-  onUrlError: (item: IMenuItemContent) => void;
+}
+
+interface IPropsConnect extends React.Props<{}> {
+  item: IMenuItemContent;
+}
+
+class PhotoItemConnect extends ComponentBase<
+  IPropsConnect,
+  IStateConnect
+> {
+  protected _buildState(
+    p: IPropsConnect,
+    i: boolean
+  ): IStateConnect {
+    return {
+      canEdit: AuthStore.getAdminLogged()
+    };
+  }
+
+  render() {
+    return <PhotoItem {...this.props} {...this.state} />;
+  }
 }
 
 interface IState {
   width: number;
   height: number;
-  focus: string;
 }
+
+interface IProps extends IPropsConnect, IStateConnect {}
 
 class PhotoItem extends React.Component<IProps, IState> {
   state = {
     width: 0,
-    height: 0,
-    focus: ""
+    height: 0
   };
 
-  private renderer: Renderer | Editor | null = null;
-
   private onDeleteItem = () => {
-    this.props.onDeleteItem(
+    ItemStore.delete(
       this.props.item.groupid,
       this.props.item.id
     );
   };
 
-  private onChangeFocusFromList = (id: string) => {
-    if (this.renderer) {
-      this.renderer.changeFocus(id);
-    }
-    this.setState({ focus: id });
-  };
-
-  private onChangeFocus = (id: string) => {
-    this.setState({ focus: id });
-  };
-
   componentDidMount() {
     if (this.props.item.url === "") {
-      this.props.onUrlError(this.props.item);
+      DataStore.onUrlError(this.props.item);
     }
-
     this.setSizes();
-
     window.addEventListener("resize", this.setSizes);
   }
 
   componentWillUnmount() {
     window.removeEventListener("resize", this.setSizes);
   }
-
-  private onEditClick = (polygon: IPolygon) => {
-    if (this.renderer) {
-      this.renderer.setEditing(polygon);
-    }
-  };
 
   private setSizes = () => {
     const width = window.innerWidth;
@@ -92,178 +86,42 @@ class PhotoItem extends React.Component<IProps, IState> {
   };
 
   render() {
-    const itemWidth = this.props.item.width;
-    const itemHeight = this.props.item.height;
-
-    // Vertical split
-
-    const verticalSplitAvailableWidth =
-      this.state.width / 2;
-    const verticalSplitAvailableHeight = this.state.height;
-
-    // se ela for maior em altura do que largura, ela deve crescer pra cima até alcançar a altura máxima
-    // e manter a proporção para a dimensão menor
-    const isVertical =
-      itemHeight / itemWidth >
-      verticalSplitAvailableHeight /
-        verticalSplitAvailableWidth;
-
-    let [verticalSplitWidth, verticalSplitHeight] = [0, 0];
-
-    if (isVertical) {
-      const newHeight = verticalSplitAvailableHeight;
-      const grewBy = newHeight / itemHeight;
-      const newWidth = itemWidth * grewBy;
-      [verticalSplitWidth, verticalSplitHeight] = [
-        newWidth,
-        newHeight
-      ];
-    } else {
-      const newWidth = verticalSplitAvailableWidth;
-      const grewBy = newWidth / itemWidth;
-      const newHeight = itemHeight * grewBy;
-      [verticalSplitWidth, verticalSplitHeight] = [
-        newWidth,
-        newHeight
-      ];
-    }
-
-    const verticalSplitArea =
-      verticalSplitWidth * verticalSplitHeight;
-
-    // Horizontal split
-
-    const horizontalSplitAvailableWidth = this.state.width;
-    const horizontalSplitAvailableHeight =
-      this.state.height / 2;
-
-    const isHorizontal =
-      itemHeight / itemWidth <
-      horizontalSplitAvailableHeight /
-        horizontalSplitAvailableWidth;
-
-    const getDimensionsHorizontalSplit = () => {
-      if (isHorizontal) {
-        const newWidth = horizontalSplitAvailableWidth;
-        const grewBy = newWidth / itemWidth;
-        const newHeight = itemHeight * grewBy;
-        return [newWidth, newHeight];
-      } else {
-        const newHeight = horizontalSplitAvailableHeight;
-        const grewBy = newHeight / itemHeight;
-        const newWidth = itemWidth * grewBy;
-        return [newWidth, newHeight];
-      }
-    };
-
-    const [
-      horizontalSplitWidth,
-      horizontalSplitHeight
-    ] = getDimensionsHorizontalSplit();
-
-    const horizontalSplitArea =
-      horizontalSplitWidth * horizontalSplitHeight;
-
-    // let width = 0;
-    // let height = 0;
-
-    const isVerticalSplit =
-      verticalSplitArea > horizontalSplitArea;
-
+    const { styles } = this.getStyles();
     const url = this.props.item.url;
-
-    // if (!url) {
-    //   return null;
-    // }
-
-    const styles = isVerticalSplit
-      ? {
-          wrapper: {
-            display: "flex",
-            flexDirection: "row",
-            marginTop: this.props.canEdit ? EDITBAR_SIZE : 0
-          },
-          splitter: {
-            height: verticalSplitAvailableHeight,
-            width: verticalSplitAvailableWidth,
-            display: "flex"
-          },
-          img: {
-            width: Math.max(
-              0,
-              verticalSplitWidth - NUMS_FIX
-            ),
-            height: Math.max(
-              0,
-              verticalSplitHeight - NUMS_FIX
-            )
-          }
-        }
-      : {
-          wrapper: {
-            display: "flex",
-            flexDirection: "column",
-            marginTop: this.props.canEdit ? EDITBAR_SIZE : 0
-          },
-          splitter: {
-            height: horizontalSplitAvailableHeight,
-            width: horizontalSplitAvailableWidth,
-            display: "flex"
-          },
-          img: {
-            width: Math.max(
-              0,
-              horizontalSplitWidth - NUMS_FIX
-            ),
-            height: Math.max(
-              0,
-              horizontalSplitHeight - NUMS_FIX
-            )
-          }
-        };
 
     const { vbh, vbw } = this.getRedimension();
     return (
       <>
-        <div style={styles.wrapper as any}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: styles.wrapper.flexDirection as
+              | "row"
+              | "column",
+            marginTop: this.props.canEdit ? EDITBAR_SIZE : 0
+          }}
+        >
           <div
             style={{
-              ...styles.splitter,
+              width: styles.splitter.width,
+              height: styles.splitter.height,
               justifyContent: "center",
-              alignItems: "center"
+              alignItems: "center",
+              display: "flex"
             }}
           >
-            {this.props.canEdit ? (
-              <Editor
-                ref={ref => (this.renderer = ref)}
-                onCreatePolygon={this.props.onCreatePolygon}
-                onEditPolygon={this.props.onEditPolygon}
-                polygons={this.props.item.polygons}
-                width={styles.img.width}
-                height={styles.img.height}
-                outerHeight={styles.splitter.height}
-                outerWidth={styles.splitter.width}
-                vbh={vbh}
-                vbw={vbw}
-                src={url}
-                onChangeFocus={this.onChangeFocus}
-                onDeleteItem={this.onDeleteItem}
-              />
-            ) : (
-              <Renderer
-                ref={ref => (this.renderer = ref)}
-                vbh={vbh}
-                vbw={vbw}
-                polygons={this.props.item.polygons}
-                width={styles.img.width}
-                height={styles.img.height}
-                outerHeight={styles.splitter.height}
-                outerWidth={styles.splitter.width}
-                editing={false}
-                src={url}
-                onChangeFocus={this.onChangeFocus}
-              />
-            )}
+            <Editor
+              polygons={this.props.item.polygons}
+              width={styles.img.width}
+              height={styles.img.height}
+              outerHeight={styles.splitter.height}
+              outerWidth={styles.splitter.width}
+              vbh={vbh}
+              vbw={vbw}
+              src={url}
+              onDeleteItem={this.onDeleteItem}
+              canEdit={this.props.canEdit}
+            />
           </div>
           <div
             style={{
@@ -276,16 +134,7 @@ class PhotoItem extends React.Component<IProps, IState> {
               display: "block"
             }}
           >
-            <List
-              focus={this.state.focus}
-              item={this.props.item}
-              onChangeFocus={this.onChangeFocusFromList}
-              canEdit={this.props.canEdit}
-              onDelete={this.props.onDeletePolygon}
-              onEdit={this.onEditClick}
-              height={styles.splitter.height}
-              width={styles.splitter.width}
-            />
+            <List item={this.props.item} />
           </div>
         </div>
       </>
@@ -310,6 +159,116 @@ class PhotoItem extends React.Component<IProps, IState> {
       return { vbh, vbw };
     }
   };
+
+  private getStyles() {
+    const itemWidth = this.props.item.width;
+    const itemHeight = this.props.item.height;
+    // Vertical split
+    const verticalSplitAvailableWidth =
+      this.state.width / 2;
+    const verticalSplitAvailableHeight = this.state.height;
+    // se ela for maior em altura do que largura, ela deve crescer pra cima até alcançar a altura máxima
+    // e manter a proporção para a dimensão menor
+    const isVertical =
+      itemHeight / itemWidth >
+      verticalSplitAvailableHeight /
+        verticalSplitAvailableWidth;
+    let [verticalSplitWidth, verticalSplitHeight] = [0, 0];
+    if (isVertical) {
+      const newHeight = verticalSplitAvailableHeight;
+      const grewBy = newHeight / itemHeight;
+      const newWidth = itemWidth * grewBy;
+      [verticalSplitWidth, verticalSplitHeight] = [
+        newWidth,
+        newHeight
+      ];
+    } else {
+      const newWidth = verticalSplitAvailableWidth;
+      const grewBy = newWidth / itemWidth;
+      const newHeight = itemHeight * grewBy;
+      [verticalSplitWidth, verticalSplitHeight] = [
+        newWidth,
+        newHeight
+      ];
+    }
+    const verticalSplitArea =
+      verticalSplitWidth * verticalSplitHeight;
+    // Horizontal split
+    const horizontalSplitAvailableWidth = this.state.width;
+    const horizontalSplitAvailableHeight =
+      this.state.height / 2;
+    const isHorizontal =
+      itemHeight / itemWidth <
+      horizontalSplitAvailableHeight /
+        horizontalSplitAvailableWidth;
+    const getDimensionsHorizontalSplit = () => {
+      if (isHorizontal) {
+        const newWidth = horizontalSplitAvailableWidth;
+        const grewBy = newWidth / itemWidth;
+        const newHeight = itemHeight * grewBy;
+        return [newWidth, newHeight];
+      } else {
+        const newHeight = horizontalSplitAvailableHeight;
+        const grewBy = newHeight / itemHeight;
+        const newWidth = itemWidth * grewBy;
+        return [newWidth, newHeight];
+      }
+    };
+    const [
+      horizontalSplitWidth,
+      horizontalSplitHeight
+    ] = getDimensionsHorizontalSplit();
+    const horizontalSplitArea =
+      horizontalSplitWidth * horizontalSplitHeight;
+    // let width = 0;
+    // let height = 0;
+    const isVerticalSplit =
+      verticalSplitArea > horizontalSplitArea;
+    // if (!url) {
+    //   return null;
+    // }
+
+    const styles = isVerticalSplit
+      ? {
+          wrapper: {
+            flexDirection: "row"
+          },
+          splitter: {
+            height: verticalSplitAvailableHeight,
+            width: verticalSplitAvailableWidth
+          },
+          img: {
+            width: Math.max(
+              0,
+              verticalSplitWidth - NUMS_FIX
+            ),
+            height: Math.max(
+              0,
+              verticalSplitHeight - NUMS_FIX
+            )
+          }
+        }
+      : {
+          wrapper: {
+            flexDirection: "column"
+          },
+          splitter: {
+            height: horizontalSplitAvailableHeight,
+            width: horizontalSplitAvailableWidth
+          },
+          img: {
+            width: Math.max(
+              0,
+              horizontalSplitWidth - NUMS_FIX
+            ),
+            height: Math.max(
+              0,
+              horizontalSplitHeight - NUMS_FIX
+            )
+          }
+        };
+    return { styles };
+  }
 }
 
-export default PhotoItem;
+export default PhotoItemConnect;

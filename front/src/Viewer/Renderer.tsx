@@ -8,6 +8,7 @@ import {
   NOT_EDITING_FILL
 } from "./Constants";
 import colors from "./Colors";
+import ViewerStore from "../Stores/ViewerStore";
 
 interface IProps {
   polygons: IPolygon[];
@@ -18,7 +19,6 @@ interface IProps {
   height: number;
   onClickCreating?: (x: number, y: number) => void;
   onMoveCreating?: (x: number, y: number) => void;
-  onChangeFocus?: (id: string) => void;
   onContextMenu?: () => void;
   vbw: number;
   vbh: number;
@@ -32,16 +32,6 @@ class Renderer extends React.Component<
   state = {
     showing: "",
     clicked: ""
-    // refresh: false
-  };
-
-  // componentWillReceiveProps(nextProps: IProps) {
-  //   if (this.props.src !== nextProps.src) {
-  //     this.refreshPage();
-  //   }
-  // }
-  public setEditing = (polygon: IPolygon) => {
-    // Só pro compilador ficar feliz e não dar erro de tipo
   };
 
   public changeFocus(id: string) {
@@ -51,17 +41,7 @@ class Renderer extends React.Component<
     });
   }
 
-  // private refreshPage = () => {
-  //   const that = this;
-  //   this.setState({ refresh: true }, () => {
-  //     that.setState({ refresh: false });
-  //   });
-  // };
-
   private onChangeFocus = () => {
-    if (!this.props.onChangeFocus) {
-      return;
-    }
     let id = "";
     if (this.state.clicked !== "") {
       id = this.state.clicked;
@@ -70,7 +50,7 @@ class Renderer extends React.Component<
     if (this.state.showing !== "") {
       id = this.state.showing;
     }
-    this.props.onChangeFocus(id);
+    ViewerStore.setFocus(id, true);
   };
 
   private onMouseEnter = (id: string) => {
@@ -153,15 +133,11 @@ class Renderer extends React.Component<
   ) => {
     if (this.props.onContextMenu) {
       ev.preventDefault();
-      // ev.stopPropagation()
       this.props.onContextMenu();
     }
   };
 
   render() {
-    // if (this.state.refresh) {
-    //   return null;
-    // }
     return (
       <div
         style={{
@@ -220,10 +196,6 @@ class Renderer extends React.Component<
       </div>
     );
   }
-
-  // private newMethod(): ((event: ) => void) | undefined {
-  //   return e => this.onMouseMove;
-  // }
 }
 
 export default Renderer;

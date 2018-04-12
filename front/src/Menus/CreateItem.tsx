@@ -1,17 +1,36 @@
 import * as React from "react";
-import { IItemToCreate } from "../Interfaces";
+import ItemStore from "../Stores/ItemStore";
+import { ComponentBase } from "resub";
+import CreateItemView from "./CreateItemView";
+interface IConnectState {
+  readonly uploading: boolean;
+  readonly uploadingId: string;
+  readonly uploadingText: string;
+}
 
-interface IProps {
-  loading: boolean;
-  onCreateItem: (
-    groupid: string,
-    item: IItemToCreate
-  ) => Promise<void>;
+interface IConnectProps extends React.Props<{}> {
   groupid: string;
   grouptitle: string;
-  uploading: boolean;
-  uploadPercent: string;
-  uploadingGroupid: string;
+}
+
+class CreateItemConnector extends ComponentBase<
+  IConnectProps,
+  IConnectState
+> {
+  protected _buildState(
+    p: IConnectProps,
+    i: boolean
+  ): IConnectState {
+    return {
+      uploading: ItemStore.getUploading(),
+      uploadingId: ItemStore.getUploadingGroupId(),
+      uploadingText: ItemStore.getUploadingText()
+    };
+  }
+
+  render() {
+    return <CreateItem {...this.props} {...this.state} />;
+  }
 }
 
 interface IState {
@@ -22,6 +41,7 @@ interface IState {
   readonly file: File | null;
   readonly error: boolean;
 }
+
 const initialState: IState = {
   newTitle: "",
   fileName: "",
@@ -31,27 +51,34 @@ const initialState: IState = {
   error: false
 };
 
-class CreateItem extends React.Component<IProps, IState> {
+interface IProps extends IConnectState, IConnectProps {}
+
+class CreateItem extends ComponentBase<IProps, IState> {
   readonly state = initialState;
 
-  private onChangeTitle = (e: any) => {
-    this.setState({ newTitle: e.target.value });
+  private onChangeTitle = (
+    ev: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    this.setState({ newTitle: ev.target.value });
   };
 
-  private thisInstanceUploading = () => {
-    return (
-      this.props.uploading &&
-      this.props.uploadingGroupid === this.props.groupid
-    );
+  private isThisInstanceUploading = () => {
+    return this.props.uploadingId === this.props.groupid;
   };
 
   private isDisabled = () => {
     return (
-      this.thisInstanceUploading() ||
+      this.isThisInstanceUploading() ||
       this.state.file == null ||
       this.state.newTitle.length === 0
     );
   };
+
+  private isLoading() {
+    return (
+      this.props.uploading && this.isThisInstanceUploading()
+    );
+  }
 
   private onCreate = () => {
     this.setState({ error: false });
@@ -62,13 +89,12 @@ class CreateItem extends React.Component<IProps, IState> {
       return;
     }
 
-    this.props
-      .onCreateItem(this.props.groupid, {
-        title: this.state.newTitle,
-        width: this.state.width,
-        height: this.state.height,
-        file: this.state.file as any
-      })
+    ItemStore.create(this.props.groupid, {
+      title: this.state.newTitle,
+      width: this.state.width,
+      height: this.state.height,
+      file: this.state.file as any
+    })
       .then(() => {
         this.setState(initialState);
       })
@@ -104,70 +130,22 @@ class CreateItem extends React.Component<IProps, IState> {
   };
 
   render() {
-    const loading = this.thisInstanceUploading()
-      ? "is-loading"
-      : "";
     return (
-      <>
-        <h2 className="subtitle">
-          Cadastrar nova foto em {this.props.grouptitle}
-        </h2>
-        <div className="field is-grouped">
-          <div className="control">
-            <div className="file is-dark">
-              <label className="file-label">
-                <input
-                  className="file-input"
-                  type="file"
-                  name="resume"
-                  onChange={this.onChangePhoto}
-                />
-                <span className="file-cta">
-                  <span className="file-label">
-                    Escolha a foto
-                  </span>
-                </span>
-              </label>
-            </div>
-          </div>
-          {this.state.fileName !== "" && (
-            <span
-              className="file-name"
-              style={{ marginRight: 16, borderWidth: 2 }}
-            >
-              {this.state.fileName}
-            </span>
-          )}
-          <div className="control">
-            <input
-              onChange={this.onChangeTitle}
-              value={this.state.newTitle}
-              className="input"
-              type="text"
-              placeholder="Digite o título"
-            />
-          </div>
-          <div className="control">
-            <button
-              disabled={this.isDisabled()}
-              className={"button is-dark " + loading}
-              onClick={this.onCreate}
-            >
-              Criar
-            </button>
-          </div>
-        </div>
-
-        {this.thisInstanceUploading() && (
-          <div className="field">
-            {this.state.error && "Erro na criação."}
-            <br />
-            {this.props.uploadPercent}
-          </div>
-        )}
-      </>
+      <CreateItemView
+        uploading={this.isThisInstanceUploading()}
+        loading={this.isLoading()}
+        disabled={this.isDisabled()}
+        grouptitle={this.props.grouptitle}
+        fileName={this.state.fileName}
+        uploadingText={this.props.uploadingText}
+        newTitle={this.state.newTitle}
+        error={this.state.error}
+        onChangePhoto={this.onChangePhoto}
+        onCreate={this.onCreate}
+        onChangeTitle={this.onChangeTitle}
+      />
     );
   }
 }
 
-export default CreateItem;
+export default CreateItemConnector;

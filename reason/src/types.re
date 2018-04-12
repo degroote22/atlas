@@ -1,0 +1,3 @@
+type menuStatus =
+  | Closed
+  | Opened;

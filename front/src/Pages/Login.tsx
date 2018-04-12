@@ -1,17 +1,40 @@
 import * as React from "react";
+import { ComponentBase } from "resub";
+import AuthStore from "../Stores/AuthStore";
 
-interface IProps {
+interface IConnectProps extends React.Props<{}> {}
+
+interface IConnectState {
   loading: boolean;
-  onLogin: (email: string, password: string) => void;
   isLogged: boolean;
-  onSignout: () => void;
+}
+
+class ConnectLoginPage extends ComponentBase<
+  IConnectProps,
+  IConnectState
+> {
+  protected _buildState(
+    p: IConnectProps,
+    i: boolean
+  ): IConnectState {
+    return {
+      loading: AuthStore.getLoading(),
+      isLogged: AuthStore.getAdminLogged()
+    };
+  }
+  render() {
+    return <LoginPage {...this.props} {...this.state} />;
+  }
 }
 
 interface IState {
   email: string;
   password: string;
 }
-export const cn = (ns: string[]) => ns.join(" ");
+
+interface IProps extends IConnectProps, IConnectState {}
+
+const cn = (ns: string[]) => ns.join(" ");
 
 const colorModifier = "is-dark";
 
@@ -36,10 +59,7 @@ class LoginPage extends React.Component<IProps, IState> {
   };
 
   onLoginClick = () => {
-    this.props.onLogin(
-      this.state.email,
-      this.state.password
-    );
+    AuthStore.signIn(this.state.email, this.state.password);
   };
 
   render() {
@@ -47,22 +67,23 @@ class LoginPage extends React.Component<IProps, IState> {
       return (
         <section className="hero is-light">
           <div className="hero-body">
-            <div className="container">
-              <div style={{ padding: 32, maxWidth: 512 }}>
-                <div className="field">
-                  <button
-                    className={cn([
-                      "button",
-                      "is-fullwidth",
-                      "is-danger",
-                      this.props.loading ? "is-loading" : ""
-                    ])}
-                    onClick={this.props.onSignout}
-                    disabled={this.props.loading}
-                  >
-                    Sair
-                  </button>
-                </div>
+            <div
+              className="container"
+              style={{ padding: 32, maxWidth: 512 }}
+            >
+              <div className="field">
+                <button
+                  className={cn([
+                    "button",
+                    "is-fullwidth",
+                    "is-danger",
+                    this.props.loading ? "is-loading" : ""
+                  ])}
+                  onClick={AuthStore.signOff}
+                  disabled={this.props.loading}
+                >
+                  Sair
+                </button>
               </div>
             </div>
           </div>
@@ -131,4 +152,4 @@ class LoginPage extends React.Component<IProps, IState> {
   }
 }
 
-export default LoginPage;
+export default ConnectLoginPage;

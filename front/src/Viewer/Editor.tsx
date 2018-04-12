@@ -1,44 +1,40 @@
 import * as React from "react";
 import Renderer from "./Renderer";
-import {
-  IPolygon,
-  IPathPoint,
-  IPolygonToCreate
-} from "../Interfaces";
+import { IPolygon, IPathPoint } from "../Interfaces";
 import {
   EDITBAR_SIZE,
   HERO_SIZE,
   EDITBAR_BACKGROUND,
   CARD_MARGIN
 } from "./Constants";
+import EditorStore from "../Stores/EditorStore";
 
-class Editor extends React.Component<
-  {
-    polygons: IPolygon[];
-    width: number;
-    height: number;
-    outerHeight: number;
-    outerWidth: number;
-    vbw: number;
-    vbh: number;
-    src: string;
-    onCreatePolygon: (polygon: IPolygonToCreate) => void;
-    onEditPolygon: (polygon: IPolygon) => void;
-    onChangeFocus: (id: string) => void;
-    onDeleteItem: () => void;
-  },
-  {
-    editing: boolean;
-    editingId: string;
-    creating: boolean;
-    saving: boolean;
-    creatingPath: IPathPoint[];
-    creatingName: string;
-    creatingDescription: string;
-    mouseCoordinate: IPathPoint;
-    paths: IPathPoint[][];
-  }
-> {
+interface IProps {
+  polygons: IPolygon[];
+  width: number;
+  height: number;
+  outerHeight: number;
+  outerWidth: number;
+  vbw: number;
+  vbh: number;
+  src: string;
+  onDeleteItem: () => void;
+  canEdit: boolean;
+}
+
+interface IState {
+  editing: boolean;
+  editingId: string;
+  creating: boolean;
+  saving: boolean;
+  creatingPath: IPathPoint[];
+  creatingName: string;
+  creatingDescription: string;
+  mouseCoordinate: IPathPoint;
+  paths: IPathPoint[][];
+}
+
+class Editor extends React.Component<IProps, IState> {
   state = {
     editing: false,
     editingId: "",
@@ -50,6 +46,11 @@ class Editor extends React.Component<
     mouseCoordinate: { x: 0, y: 0 },
     paths: []
   };
+
+  constructor(props: IProps) {
+    super(props);
+    EditorStore.registerSetEditing(this.setEditing);
+  }
 
   public setEditing = (polygon: IPolygon) => {
     this.setState({
@@ -97,14 +98,14 @@ class Editor extends React.Component<
 
   private onConfirm = () => {
     if (this.state.editing) {
-      this.props.onEditPolygon({
+      EditorStore.editPolygon({
         id: this.state.editingId,
         paths: this.state.paths,
         description: this.state.creatingDescription,
         title: this.state.creatingName
       });
     } else {
-      this.props.onCreatePolygon({
+      EditorStore.createPolygon({
         paths: this.state.paths,
         description: this.state.creatingDescription,
         title: this.state.creatingName
@@ -247,7 +248,7 @@ class Editor extends React.Component<
           ADICIONAR
         </a>
         <a
-          onClick={this.onDelete}
+          onClick={this.props.onDeleteItem}
           style={{ marginLeft: CARD_MARGIN }}
           className="button is-light"
         >
@@ -255,13 +256,6 @@ class Editor extends React.Component<
         </a>
       </>
     );
-  };
-
-  private onDelete = () => {
-    const ok = confirm("Excluir item?");
-    if (ok) {
-      this.props.onDeleteItem();
-    }
   };
 
   private getPolygons = (): IPolygon[] => {
@@ -345,6 +339,22 @@ class Editor extends React.Component<
     });
   };
   render() {
+    if (!this.props.canEdit) {
+      return (
+        <Renderer
+          ref={ref => (this.renderer = ref)}
+          vbw={this.props.vbw}
+          vbh={this.props.vbh}
+          height={this.props.height}
+          width={this.props.width}
+          outerWidth={this.props.outerWidth}
+          outerHeight={this.props.outerHeight}
+          polygons={this.getPolygons()}
+          src={this.props.src}
+          editing={false}
+        />
+      );
+    }
     // "200,10 250,190 160,210"
     return (
       <div
@@ -372,13 +382,12 @@ class Editor extends React.Component<
           width={this.props.width}
           outerWidth={this.props.outerWidth}
           outerHeight={this.props.outerHeight}
+          polygons={this.getPolygons()}
+          src={this.props.src}
           onClickCreating={this.onClickCreating}
           onMoveCreating={this.onMoveCreating}
           onContextMenu={this.onContextMenu}
           editing={this.state.creating || this.state.saving}
-          polygons={this.getPolygons()}
-          src={this.props.src}
-          onChangeFocus={this.props.onChangeFocus}
         />
       </div>
     );

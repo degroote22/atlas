@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "atlas-f41fc"
+    "default": "atlas-f41fc",
+    "staging": "atlas-staging2"
   }
 }
