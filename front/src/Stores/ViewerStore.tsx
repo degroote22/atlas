@@ -6,7 +6,7 @@ import {
 
 type ScrollTo = (focus: string) => void;
 @AutoSubscribeStore
-class ViewerStore extends StoreBase {
+export class ViewerStore extends StoreBase {
   private focus = "";
   private scrollTo: ScrollTo = (f: string) => {};
 

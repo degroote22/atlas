@@ -29,7 +29,9 @@ export interface IPolygonToRender extends IPolygon {
 
 export interface IMenuGroupDb {
   title: string;
-  priority: number;
+  priority:
+    | number
+    | typeof firebase.database.ServerValue.TIMESTAMP;
   items: IMenuItem[];
 }
 

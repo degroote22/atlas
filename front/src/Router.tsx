@@ -3,7 +3,7 @@ import { IMenuItem, IMenuItemContent } from "./Interfaces";
 import PhotoItem from "./Viewer/PhotoItem";
 import Login from "./Pages/Login";
 import About from "./Pages/About";
-
+import * as Strings from "./Strings";
 import { ComponentBase } from "resub";
 import RouterStore from "./Stores/RouterStore";
 
@@ -21,7 +21,7 @@ class Router extends ComponentBase<IProps, IState> {
   }
 
   private renderAbout = () => {
-    return <About />;
+    return <About Strings={Strings} />;
   };
 
   private renderLogin = () => {

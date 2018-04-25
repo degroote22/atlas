@@ -22,7 +22,7 @@ const getPolygons = (polygons: any): IPolygon[] => {
 };
 
 const getItems = (items: any, groupid: string) => {
-  return Object.keys(items).map(id => ({
+  return Object.keys(items || {}).map(id => ({
     ...items[id],
     id,
     type: "content" as any,

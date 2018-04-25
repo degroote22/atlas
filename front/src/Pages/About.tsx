@@ -1,11 +1,13 @@
 import * as React from "react";
 import * as Strings from "../Strings";
 
-class AboutPage extends React.Component {
+class AboutPage extends React.Component<{
+  Strings: typeof Strings;
+}> {
   render() {
     return (
       <section className="hero is-light">
-        {Strings.About.map((s, i) => (
+        {this.props.Strings.About.map((s, i) => (
           <div
             key={i}
             className="hero-body"

@@ -2,6 +2,7 @@ import * as React from "react";
 import ItemStore from "../Stores/ItemStore";
 import { ComponentBase } from "resub";
 import CreateItemView from "./CreateItemView";
+
 interface IConnectState {
   readonly uploading: boolean;
   readonly uploadingId: string;

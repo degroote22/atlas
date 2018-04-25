@@ -1,41 +1,28 @@
-import {
-  StoreBase,
-  AutoSubscribeStore
-  // autoSubscribe
-} from "resub";
+import { AutoSubscribeStore } from "resub";
 import { IMenuGroupDb } from "../Interfaces";
-import Firebase from "../Database/firebase";
-import RouterStore from "./RouterStore";
+import DbStoreInject from "./DbStoreInject";
 
 @AutoSubscribeStore
-class CreateGroupStore extends StoreBase {
+export class GroupStore extends DbStoreInject {
   public create = (title: string): Promise<void> => {
     const group: IMenuGroupDb = {
       title,
-      priority: new Date().getTime(),
+      priority: this.db().Now,
       items: []
     };
 
-    return new Promise((rs, rj) => {
-      Firebase.database()
-        .ref("/groups")
-        .push(group)
-        .then(rs, rj);
-    }) as Promise<void>;
+    return this.db().Group.Create(group);
   };
   public delete = async (id: string) => {
     const ok = confirm("Excluir seção?");
 
     if (ok) {
-      RouterStore.reset();
-      Firebase.database()
-        .ref("/groups")
-        .child(id)
-        .set(null);
+      this.st().RouterStore.reset();
+      this.db().Group.Delete(id);
     }
   };
 }
 
-const store = new CreateGroupStore();
+const store = new GroupStore();
 
 export default store;

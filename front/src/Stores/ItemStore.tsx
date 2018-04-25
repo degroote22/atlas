@@ -1,14 +1,20 @@
-import {
-  StoreBase,
-  AutoSubscribeStore,
-  autoSubscribe
-} from "resub";
+import { AutoSubscribeStore, autoSubscribe } from "resub";
 import { IItemToCreate } from "../Interfaces";
-import Firebase from "../Database/firebase";
-import RouterStore from "./RouterStore";
+// import Firebase from "../Database/firebase";
+import DbStoreInject from "./DbStoreInject";
+
+export const getProgressText = (
+  x: number,
+  extra?: string
+) => {
+  const t = extra ? extra : "";
+  const n = x > 99 ? 99 : x;
+
+  return n + "% concluído. " + t;
+};
 
 @AutoSubscribeStore
-class CreateItemStore extends StoreBase {
+export class ItemStore extends DbStoreInject {
   private uploading = false;
 
   @autoSubscribe
@@ -31,11 +37,8 @@ class CreateItemStore extends StoreBase {
   }
 
   private setProgress = (x: number, extra?: string) => {
-    const t = extra ? extra : "";
-    const n = x > 99 ? 99 : x;
-
     this.uploading = true;
-    this.uploadingText = n + "% concluído. " + t;
+    this.uploadingText = getProgressText(x, extra);
     this.trigger();
   };
 
@@ -47,7 +50,7 @@ class CreateItemStore extends StoreBase {
     );
 
     switch (snapshot.state) {
-      case Firebase.storage.TaskState.PAUSED: // or 'paused'
+      case "paused": // or 'paused'
         this.setProgress(progress, "Upload pausado");
         break;
       // case Firebase.storage.TaskState.RUNNING: // or 'running'
@@ -71,24 +74,13 @@ class CreateItemStore extends StoreBase {
     key: string;
     item: IItemToCreate;
   }) => {
-    // Handle successful uploads on complete
-    // For instance, get the download URL: https://firebasestorage.googleapis.com/...
-    // var downloadURL = uploadTask.snapshot.downloadURL;
-    return Firebase.database()
-      .ref("/groups")
-      .child(groupid)
-      .child("items")
-      .child(key)
-      .set({
-        title: item.title,
-        width: item.width,
-        height: item.height,
-        extension
-      });
-    // .then(() => {
-    //   that.uploading = false;
-    //   rs();
-    // });
+    const newItem = {
+      title: item.title,
+      width: item.width,
+      height: item.height,
+      extension
+    };
+    return this.db().Item.Set(groupid, key, newItem);
   };
 
   public create = async (
@@ -102,24 +94,16 @@ class CreateItemStore extends StoreBase {
       const nameSplit = item.file.name.split(".");
       const extension = nameSplit[nameSplit.length - 1];
 
-      const reference = await Firebase.database()
-        .ref("/groups")
-        .child(groupid)
-        .child("items")
-        .push();
-
+      const reference = await this.db().Item.Push(groupid);
       const key = reference.key;
-
       const filename = key + "." + extension;
-      const storageRef = Firebase.storage()
-        .ref()
-        .child("images");
-
-      const imageRef = storageRef.child(filename);
+      const imageRef = this.db().Storage.CreateImageRef(
+        filename
+      );
 
       const task = imageRef.put(item.file);
 
-      const that = this;
+      // const that = this;
 
       return new Promise((rs, rj) => {
         task.on(
@@ -127,9 +111,9 @@ class CreateItemStore extends StoreBase {
           this.onProgress,
           error => {
             this.uploadingText =
-              "Houve um erro no upload da imagem";
-            that.uploading = false;
-
+              "Houve um erro no upload da imagem. " +
+              JSON.stringify(error);
+            this.uploading = false;
             this.trigger();
             rj();
           },
@@ -140,37 +124,31 @@ class CreateItemStore extends StoreBase {
               extension,
               groupid
             }).then(() => {
-              that.uploading = false;
-              that.uploadingText = "Enviado com sucesso!";
-              that.trigger();
+              this.uploading = false;
+              this.uploadingText = "Enviado com sucesso!";
+              this.trigger();
               rs();
             })
         );
       }) as Promise<void>;
     } catch (err) {
-      this.uploadingText = "Houve um erro na criação";
+      this.uploadingText =
+        "Houve um erro na criação. " + JSON.stringify(err);
       this.uploading = false;
       this.trigger();
-      console.error(err);
       return Promise.reject("");
     }
   };
 
   public delete = async (groupid: string, id: string) => {
     const ok = confirm("Excluir item?");
-
     if (ok) {
-      RouterStore.reset();
-      Firebase.database()
-        .ref("/groups")
-        .child(groupid)
-        .child("items")
-        .child(id)
-        .set(null);
+      this.st().RouterStore.reset();
+      this.db().Item.Delete(groupid, id);
     }
   };
 }
 
-const store = new CreateItemStore();
+const store = new ItemStore();
 
 export default store;

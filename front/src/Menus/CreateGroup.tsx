@@ -1,7 +1,9 @@
 import * as React from "react";
 import GroupStore from "../Stores/GroupStore";
 
-interface IProps {}
+interface IProps {
+  GroupStore?: typeof GroupStore;
+}
 
 const initialState = {
   newTitle: "",
@@ -11,7 +13,20 @@ const initialState = {
 type IState = Readonly<typeof initialState>;
 
 class CreateGroup extends React.Component<IProps, IState> {
+  public static defaultProps: Partial<IProps> = {
+    GroupStore: GroupStore
+  };
+
   readonly state: IState = initialState;
+
+  private GroupStore() {
+    if (!this.props.GroupStore) {
+      throw Error(
+        "Group Store não definida em Create Group"
+      );
+    }
+    return this.props.GroupStore;
+  }
 
   private onChangeTitle = (event: any) => {
     this.setState({ newTitle: event.target.value });
@@ -24,7 +39,8 @@ class CreateGroup extends React.Component<IProps, IState> {
     this.setState({
       error: false
     });
-    GroupStore.create(this.state.newTitle)
+    this.GroupStore()
+      .create(this.state.newTitle)
       .then(() => {
         this.setState(initialState);
       })
@@ -36,7 +52,7 @@ class CreateGroup extends React.Component<IProps, IState> {
   private renderError() {
     return (
       this.state.error && (
-        <div className="field has-addons">
+        <div className="_error field has-addons">
           <p className="subtitle">
             Houve um erro no upload!
           </p>
@@ -59,7 +75,7 @@ class CreateGroup extends React.Component<IProps, IState> {
                 <input
                   onChange={this.onChangeTitle}
                   value={this.state.newTitle}
-                  className="input"
+                  className="input _input"
                   type="text"
                   placeholder="Digite o nome"
                 />
@@ -67,7 +83,7 @@ class CreateGroup extends React.Component<IProps, IState> {
               <div className="control">
                 <button
                   disabled={this.isDisabled()}
-                  className="button is-dark"
+                  className="button is-dark _create"
                   onClick={this.onCreate}
                 >
                   Criar

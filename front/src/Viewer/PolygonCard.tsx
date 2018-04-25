@@ -22,11 +22,12 @@ class PolygonCard extends ComponentBase<IProps, IState> {
     };
   }
 
-  private onEdit = () => {
+  private onEdit = () =>
     EditorStore.setEditing(this.props.polygon);
-  };
+
   private onDelete = () =>
     EditorStore.deletePolygon(this.props.polygon.id);
+
   private onClick = () =>
     ViewerStore.setFocus(this.props.polygon.id, false);
 

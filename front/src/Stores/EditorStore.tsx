@@ -1,16 +1,12 @@
-import {
-  StoreBase,
-  AutoSubscribeStore
-  // autoSubscribe
-} from "resub";
+import { AutoSubscribeStore } from "resub";
 import { IPolygon, IPolygonToCreate } from "../Interfaces";
 import RouterStore from "./RouterStore";
-import Firebase from "../Database/firebase";
+import DbStoreInject from "./DbStoreInject";
 
 type SetEditingFn = (polygon: IPolygon) => void;
 
 @AutoSubscribeStore
-class EditorStore extends StoreBase {
+class EditorStore extends DbStoreInject {
   private setEditingFn: SetEditingFn = (
     polygon: IPolygon
   ) => {};
@@ -21,14 +17,7 @@ class EditorStore extends StoreBase {
       const groupid = openItem.groupid;
       const itemid = openItem.id;
 
-      Firebase.database()
-        .ref("/groups")
-        .child(groupid)
-        .child("items")
-        .child(itemid)
-        .child("polygons")
-        .child(polygonid)
-        .set(null);
+      this.db().Polygon.Delete(groupid, itemid, polygonid);
     } else {
       console.error(
         "O item aberto não corresponde a um polígono na hora de deletar"
@@ -45,14 +34,12 @@ class EditorStore extends StoreBase {
       const newPolygon = { ...polygon };
       delete newPolygon.id;
 
-      Firebase.database()
-        .ref("/groups")
-        .child(groupid)
-        .child("items")
-        .child(itemid)
-        .child("polygons")
-        .child(polygon.id)
-        .set(newPolygon);
+      this.db().Polygon.Edit(
+        groupid,
+        itemid,
+        polygon,
+        newPolygon
+      );
     } else {
       console.error(
         "O item aberto não corresponde a um polígono na hora de editar"
@@ -65,13 +52,7 @@ class EditorStore extends StoreBase {
     if (openItem.type === "content") {
       const groupid = openItem.groupid;
       const itemid = openItem.id;
-      Firebase.database()
-        .ref("/groups")
-        .child(groupid)
-        .child("items")
-        .child(itemid)
-        .child("polygons")
-        .push(polygon);
+      this.db().Polygon.Create(groupid, itemid, polygon);
     } else {
       console.error(
         "O item aberto não corresponde a um polígono na hora de criar"

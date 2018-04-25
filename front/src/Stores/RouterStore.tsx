@@ -5,7 +5,7 @@ import {
 } from "resub";
 import { IMenuItem } from "../Interfaces";
 
-const DEFAULT_OPEN: IMenuItem = {
+export const DEFAULT_OPEN: IMenuItem = {
   title: "Sobre",
   type: "default",
   payload: "about",
@@ -13,7 +13,7 @@ const DEFAULT_OPEN: IMenuItem = {
 };
 
 @AutoSubscribeStore
-class RouterStore extends StoreBase {
+export class RouterStore extends StoreBase {
   private hidden = false;
   private showing: IMenuItem = DEFAULT_OPEN;
 

@@ -1,0 +1,151 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`creates a group and clears state 1`] = `
+<section
+  className="hero is-info"
+>
+  <div
+    className="hero-body"
+  >
+    <div
+      className="container"
+    >
+      <h1
+        className="title"
+      >
+        Criar nova seção
+      </h1>
+      <div
+        className="field has-addons"
+      >
+        <div
+          className="control"
+        >
+          <input
+            className="input _input"
+            onChange={[Function]}
+            placeholder="Digite o nome"
+            type="text"
+            value="Novo Título"
+          />
+        </div>
+        <div
+          className="control"
+        >
+          <button
+            className="button is-dark _create"
+            disabled={false}
+            onClick={[Function]}
+          >
+            Criar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+`;
+
+exports[`creates a group and clears state 2`] = `
+<section
+  className="hero is-info"
+>
+  <div
+    className="hero-body"
+  >
+    <div
+      className="container"
+    >
+      <h1
+        className="title"
+      >
+        Criar nova seção
+      </h1>
+      <div
+        className="field has-addons"
+      >
+        <div
+          className="control"
+        >
+          <input
+            className="input _input"
+            onChange={[Function]}
+            placeholder="Digite o nome"
+            type="text"
+            value=""
+          />
+        </div>
+        <div
+          className="control"
+        >
+          <button
+            className="button is-dark _create"
+            disabled={true}
+            onClick={[Function]}
+          >
+            Criar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+`;
+
+exports[`displays an error if needed 1`] = `
+<div
+  className="_error field has-addons"
+>
+  <p
+    className="subtitle"
+  >
+    Houve um erro no upload!
+  </p>
+</div>
+`;
+
+exports[`renders correctly 1`] = `
+<section
+  className="hero is-info"
+>
+  <div
+    className="hero-body"
+  >
+    <div
+      className="container"
+    >
+      <h1
+        className="title"
+      >
+        Criar nova seção
+      </h1>
+      <div
+        className="field has-addons"
+      >
+        <div
+          className="control"
+        >
+          <input
+            className="input _input"
+            onChange={[Function]}
+            placeholder="Digite o nome"
+            type="text"
+            value=""
+          />
+        </div>
+        <div
+          className="control"
+        >
+          <button
+            className="button is-dark _create"
+            disabled={true}
+            onClick={[Function]}
+          >
+            Criar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+`;

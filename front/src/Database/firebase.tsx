@@ -1,5 +1,5 @@
 import * as Firebase from "firebase";
-
+import "@firebase/storage";
 // var config_production = {
 //   apiKey: "AIzaSyCzMEJQup5ZzXIYciT-hnMZ7tvvgGE70yk",
 //   authDomain: "atlas-f41fc.firebaseapp.com",
